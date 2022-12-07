@@ -1,4 +1,4 @@
-package ghssh
+package gsssh
 
 import (
 	"github.com/pkg/sftp"
@@ -6,13 +6,13 @@ import (
 )
 
 type sshSftp struct {
-	*ghssh
+	*gsssh
 	sftpClient *sftp.Client
 }
 
 func NewSftpSSH(sshUser, sshPasswd, remoteAddr string) (sf *sshSftp, err error) {
 	sf = &sshSftp{}
-	sf.ghssh, err = newByPasswdSSH(sshUser, sshPasswd, remoteAddr)
+	sf.gsssh, err = newByPasswdSSH(sshUser, sshPasswd, remoteAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func NewSftpSSH(sshUser, sshPasswd, remoteAddr string) (sf *sshSftp, err error) 
 
 func NewSftpByCertSSH(sshUser, sshPrivateKeyPath, remoteAddr string) (sf *sshSftp, err error) {
 	sf = &sshSftp{}
-	sf.ghssh, err = newByCertSSH(sshUser, sshPrivateKeyPath, remoteAddr)
+	sf.gsssh, err = newByCertSSH(sshUser, sshPrivateKeyPath, remoteAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -73,5 +73,5 @@ func (sf *sshSftp) MakeDir(path string) error {
 
 func (sf *sshSftp) Close() {
 	sf.sftpClient.Close()
-	sf.ghssh.close()
+	sf.gsssh.close()
 }

@@ -1,11 +1,11 @@
-package gherror
+package gserror
 
-import "github.com/jfy0o0/goHero/errors/ghcode"
+import "github.com/jfy0o0/goStealer/errors/gscode"
 
 // iCode is the interface for Code feature.
 type iCode interface {
 	Error() string
-	Code() ghcode.Code
+	Code() gscode.Code
 }
 
 // iStack is the interface for Stack feature.

@@ -1,13 +1,13 @@
-package gherror
+package gserror
 
-import "github.com/jfy0o0/goHero/errors/ghcode"
+import "github.com/jfy0o0/goStealer/errors/gscode"
 
 // Option is option for creating error.
 type Option struct {
 	Error error       // Wrapped error if any.
 	Stack bool        // Whether recording stack information into error.
 	Text  string      // Error text, which is created by New* functions.
-	Code  ghcode.Code // Error code if necessary.
+	Code  gscode.Code // Error code if necessary.
 }
 
 // NewOption creates and returns an error with Option.

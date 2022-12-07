@@ -1,8 +1,8 @@
-package gherror
+package gserror
 
 import (
 	"fmt"
-	"github.com/jfy0o0/goHero/errors/ghcode"
+	"github.com/jfy0o0/goStealer/errors/gscode"
 )
 
 // New creates and returns an error which is formatted from given text.
@@ -10,7 +10,7 @@ func New(text string) error {
 	return &Error{
 		stack: callers(),
 		text:  text,
-		code:  ghcode.CodeNil,
+		code:  gscode.CodeNil,
 	}
 }
 
@@ -19,7 +19,7 @@ func Newf(format string, args ...interface{}) error {
 	return &Error{
 		stack: callers(),
 		text:  fmt.Sprintf(format, args...),
-		code:  ghcode.CodeNil,
+		code:  gscode.CodeNil,
 	}
 }
 
@@ -29,7 +29,7 @@ func NewSkip(skip int, text string) error {
 	return &Error{
 		stack: callers(skip),
 		text:  text,
-		code:  ghcode.CodeNil,
+		code:  gscode.CodeNil,
 	}
 }
 
@@ -39,7 +39,7 @@ func NewSkipf(skip int, format string, args ...interface{}) error {
 	return &Error{
 		stack: callers(skip),
 		text:  fmt.Sprintf(format, args...),
-		code:  ghcode.CodeNil,
+		code:  gscode.CodeNil,
 	}
 }
 

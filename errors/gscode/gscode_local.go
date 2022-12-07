@@ -1,4 +1,4 @@
-package ghcode
+package gscode
 
 import "fmt"
 

@@ -1,12 +1,12 @@
-package gherror
+package gserror
 
-import "github.com/jfy0o0/goHero/errors/ghcode"
+import "github.com/jfy0o0/goStealer/errors/gscode"
 
 // Code returns the error code of current error.
 // It returns CodeNil if it has no error code neither it does not implement interface Code.
-func Code(err error) ghcode.Code {
+func Code(err error) gscode.Code {
 	if err == nil {
-		return ghcode.CodeNil
+		return gscode.CodeNil
 	}
 	if e, ok := err.(iCode); ok {
 		return e.Code()
@@ -14,7 +14,7 @@ func Code(err error) ghcode.Code {
 	if e, ok := err.(iNext); ok {
 		return Code(e.Next())
 	}
-	return ghcode.CodeNil
+	return gscode.CodeNil
 }
 
 // Cause returns the root cause error of `err`.

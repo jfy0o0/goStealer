@@ -1,4 +1,4 @@
-package gherror
+package gserror
 
 import "runtime"
 

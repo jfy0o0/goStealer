@@ -1,16 +1,16 @@
-package ghssh
+package gsssh
 
 import (
 	"golang.org/x/crypto/ssh"
 )
 
-type ghssh struct {
+type gsssh struct {
 	sshClient *ssh.Client
 	*sshCell
 }
 
-func newByPasswdSSH(sshUser, sshPasswd, remoteAddr string) (gs *ghssh, err error) {
-	gs = &ghssh{
+func newByPasswdSSH(sshUser, sshPasswd, remoteAddr string) (gs *gsssh, err error) {
+	gs = &gsssh{
 		sshCell: newByPasswdCellSSH(sshUser, sshPasswd, remoteAddr),
 	}
 	gs.sshClient, err = ssh.Dial("tcp", gs.remoteAddr, gs.sshConfig)
@@ -20,8 +20,8 @@ func newByPasswdSSH(sshUser, sshPasswd, remoteAddr string) (gs *ghssh, err error
 	return gs, nil
 }
 
-func newByCertSSH(sshUser, sshPrivateKeyPath, remoteAddr string) (gs *ghssh, err error) {
-	gs = &ghssh{
+func newByCertSSH(sshUser, sshPrivateKeyPath, remoteAddr string) (gs *gsssh, err error) {
+	gs = &gsssh{
 		sshCell: newByCertCellSSH(sshUser, sshPrivateKeyPath, remoteAddr),
 	}
 	gs.sshClient, err = ssh.Dial("tcp", gs.remoteAddr, gs.sshConfig)
@@ -31,7 +31,7 @@ func newByCertSSH(sshUser, sshPrivateKeyPath, remoteAddr string) (gs *ghssh, err
 	return gs, nil
 }
 
-func (gs *ghssh) RunCmd(cmd string, sync bool) error {
+func (gs *gsssh) RunCmd(cmd string, sync bool) error {
 	session, err := gs.sshClient.NewSession()
 	if err != nil {
 		return err
@@ -43,6 +43,6 @@ func (gs *ghssh) RunCmd(cmd string, sync bool) error {
 	return session.Start(cmd)
 }
 
-func (gs *ghssh) close() {
+func (gs *gsssh) close() {
 	gs.sshClient.Close()
 }

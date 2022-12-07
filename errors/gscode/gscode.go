@@ -1,4 +1,4 @@
-package ghcode
+package gscode
 
 // Code is universal error code interface definition.
 type Code interface {

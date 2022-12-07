@@ -1,10 +1,10 @@
-package ghtcp
+package gstcp
 
 import (
 	"bufio"
 	"bytes"
 	"crypto/tls"
-	"github.com/jfy0o0/goHero/errors/gherror"
+	"github.com/jfy0o0/goStealer/errors/gserror"
 	"io"
 	"net"
 	"time"
@@ -74,7 +74,7 @@ func (c *Conn) Send(data []byte, retry ...Retry) error {
 			}
 			// Still failed even after retrying.
 			if len(retry) == 0 || retry[0].Count == 0 {
-				err = gherror.Wrap(err, `Write data failed`)
+				err = gserror.Wrap(err, `Write data failed`)
 				return err
 			}
 			if len(retry) > 0 {
@@ -117,7 +117,7 @@ func (c *Conn) Recv(length int, retry ...Retry) ([]byte, error) {
 		if length < 0 && index > 0 {
 			bufferWait = true
 			if err = c.rawConn.SetReadDeadline(time.Now().Add(c.receiveBufferWait)); err != nil {
-				err = gherror.Wrap(err, `SetReadDeadline for connection failed`)
+				err = gserror.Wrap(err, `SetReadDeadline for connection failed`)
 				return nil, err
 			}
 		}
@@ -149,7 +149,7 @@ func (c *Conn) Recv(length int, retry ...Retry) ([]byte, error) {
 			// Re-set the timeout when reading data.
 			if bufferWait && isTimeout(err) {
 				if err = c.rawConn.SetReadDeadline(c.receiveDeadline); err != nil {
-					err = gherror.Wrap(err, `SetReadDeadline for connection failed`)
+					err = gserror.Wrap(err, `SetReadDeadline for connection failed`)
 					return nil, err
 				}
 				err = nil
@@ -275,7 +275,7 @@ func (c *Conn) SetDeadline(t time.Time) (err error) {
 		c.sendDeadline = t
 	}
 	if err != nil {
-		err = gherror.Wrapf(err, `SetDeadline for connection failed with "%s"`, t)
+		err = gserror.Wrapf(err, `SetDeadline for connection failed with "%s"`, t)
 	}
 	return err
 }
@@ -285,7 +285,7 @@ func (c *Conn) SetReceiveDeadline(t time.Time) (err error) {
 		c.receiveDeadline = t
 	}
 	if err != nil {
-		err = gherror.Wrapf(err, `SetReadDeadline for connection failed with "%s"`, t)
+		err = gserror.Wrapf(err, `SetReadDeadline for connection failed with "%s"`, t)
 	}
 	return err
 }
@@ -295,7 +295,7 @@ func (c *Conn) SetSendDeadline(t time.Time) (err error) {
 		c.sendDeadline = t
 	}
 	if err != nil {
-		err = gherror.Wrapf(err, `SetWriteDeadline for connection failed with "%s"`, t)
+		err = gserror.Wrapf(err, `SetWriteDeadline for connection failed with "%s"`, t)
 	}
 	return err
 }

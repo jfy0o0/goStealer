@@ -1,9 +1,9 @@
-package ghssh
+package gsssh
 
 import (
 	"fmt"
-	"github.com/jfy0o0/goHero/errors/gherror"
-	"github.com/jfy0o0/goHero/net/ghssh/internal"
+	"github.com/jfy0o0/goStealer/errors/gserror"
+	"github.com/jfy0o0/goStealer/net/gsssh/internal"
 	"golang.org/x/crypto/ssh"
 	"net"
 )
@@ -35,7 +35,7 @@ func NewTunnelByCertSSH(sshUser, sshPrivateKeyPath, localPort, remoteAddrSSH, de
 func (st *sshTunnel) Run() error {
 	listen, err := net.Listen("tcp", ":"+st.localPort)
 	if err != nil {
-		return gherror.Wrapf(err, "listen port [%v] failed", st.localPort)
+		return gserror.Wrapf(err, "listen port [%v] failed", st.localPort)
 	}
 
 	for {

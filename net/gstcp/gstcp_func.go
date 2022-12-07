@@ -1,10 +1,10 @@
-package ghtcp
+package gstcp
 
 import (
 	"crypto/rand"
 	"crypto/tls"
-	"github.com/jfy0o0/goHero/errors/gherror"
-	"github.com/jfy0o0/goHero/net/ghtcp/internal"
+	"github.com/jfy0o0/goStealer/errors/gserror"
+	"github.com/jfy0o0/goStealer/net/gstcp/internal"
 	"net"
 	"time"
 )
@@ -32,7 +32,7 @@ func NewNetConn(address string, timeout ...time.Duration) (net.Conn, error) {
 	}
 	conn, err := net.DialTimeout(network, address, duration)
 	if err != nil {
-		err = gherror.Wrapf(
+		err = gserror.Wrapf(
 			err,
 			`net.DialTimeout failed with network "%s", address "%s", timeout "%s"`,
 			network, address, duration,
@@ -55,7 +55,7 @@ func NewNetConnTLS(address string, tlsConfig *tls.Config, timeout ...time.Durati
 	}
 	conn, err := tls.DialWithDialer(dialer, network, address, tlsConfig)
 	if err != nil {
-		err = gherror.Wrapf(
+		err = gserror.Wrapf(
 			err,
 			`tls.DialWithDialer failed with network "%s", address "%s", timeout "%s", tlsConfig "%v"`,
 			network, address, dialer.Timeout, tlsConfig,
@@ -137,7 +137,7 @@ func isTimeout(err error) bool {
 func LoadKeyCrt(crtFile, keyFile string) (*tls.Config, error) {
 	crt, err := tls.LoadX509KeyPair(crtFile, keyFile)
 	if err != nil {
-		return nil, gherror.Wrapf(err,
+		return nil, gserror.Wrapf(err,
 			`tls.LoadX509KeyPair failed for certFile "%s" and keyFile "%s"`,
 			crtFile, keyFile,
 		)
@@ -166,7 +166,7 @@ func GetFreePort() (port int, err error) {
 	)
 	resolvedAddr, err := net.ResolveTCPAddr(network, address)
 	if err != nil {
-		return 0, gherror.Wrapf(
+		return 0, gserror.Wrapf(
 			err,
 			`net.ResolveTCPAddr failed for network "%s", address "%s"`,
 			network, address,
@@ -174,7 +174,7 @@ func GetFreePort() (port int, err error) {
 	}
 	l, err := net.ListenTCP(network, resolvedAddr)
 	if err != nil {
-		return 0, gherror.Wrapf(
+		return 0, gserror.Wrapf(
 			err,
 			`net.ListenTCP failed for network "%s", address "%s"`,
 			network, resolvedAddr.String(),
@@ -194,7 +194,7 @@ func GetFreePorts(count int) (ports []int, err error) {
 	for i := 0; i < count; i++ {
 		resolvedAddr, err := net.ResolveTCPAddr(network, address)
 		if err != nil {
-			return nil, gherror.Wrapf(
+			return nil, gserror.Wrapf(
 				err,
 				`net.ResolveTCPAddr failed for network "%s", address "%s"`,
 				network, address,
@@ -202,7 +202,7 @@ func GetFreePorts(count int) (ports []int, err error) {
 		}
 		l, err := net.ListenTCP(network, resolvedAddr)
 		if err != nil {
-			return nil, gherror.Wrapf(
+			return nil, gserror.Wrapf(
 				err,
 				`net.ListenTCP failed for network "%s", address "%s"`,
 				network, resolvedAddr.String(),

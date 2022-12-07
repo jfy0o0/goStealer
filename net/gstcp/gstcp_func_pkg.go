@@ -1,4 +1,4 @@
-package ghtcp
+package gstcp
 
 import "time"
 

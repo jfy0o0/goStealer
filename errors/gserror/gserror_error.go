@@ -1,10 +1,10 @@
-package gherror
+package gserror
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/jfy0o0/goHero/errors/ghcode"
+	"github.com/jfy0o0/goStealer/errors/gscode"
 	"io"
 	"runtime"
 	"strings"
@@ -15,7 +15,7 @@ type Error struct {
 	error error       // Wrapped error.
 	stack stack       // Stack array, which records the stack information when this error is created or wrapped.
 	text  string      // Custom Error text when Error is created, might be empty when its code is not nil.
-	code  ghcode.Code // Error code if necessary.
+	code  gscode.Code // Error code if necessary.
 }
 
 const (
@@ -54,11 +54,11 @@ func (err *Error) Error() string {
 
 // Code returns the error code.
 // It returns CodeNil if it has no error code.
-func (err *Error) Code() ghcode.Code {
+func (err *Error) Code() gscode.Code {
 	if err == nil {
-		return ghcode.CodeNil
+		return gscode.CodeNil
 	}
-	if err.code == ghcode.CodeNil {
+	if err.code == gscode.CodeNil {
 		return Code(err.Next())
 	}
 	return err.code
@@ -100,7 +100,7 @@ func (err *Error) Next() error {
 }
 
 // SetCode updates the internal code with given code.
-func (err *Error) SetCode(code ghcode.Code) {
+func (err *Error) SetCode(code gscode.Code) {
 	if err == nil {
 		return
 	}

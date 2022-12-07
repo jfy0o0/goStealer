@@ -1,4 +1,4 @@
-module github.com/jfy0o0/goHero
+module github.com/jfy0o0/goStealer
 
 go 1.19
 
