@@ -1,4 +1,4 @@
-module goHero
+module github.com/jfy0o0/goHero
 
 go 1.19
 

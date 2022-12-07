@@ -1,6 +1,6 @@
 package gherror
 
-import "goHero/errors/ghcode"
+import "github.com/jfy0o0/goHero/errors/ghcode"
 
 // Option is option for creating error.
 type Option struct {

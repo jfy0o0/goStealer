@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"goHero/errors/ghcode"
+	"github.com/jfy0o0/goHero/errors/ghcode"
 	"io"
 	"runtime"
 	"strings"

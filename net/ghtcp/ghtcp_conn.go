@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/tls"
-	"goHero/errors/gherror"
+	"github.com/jfy0o0/goHero/errors/gherror"
 	"io"
 	"net"
 	"time"

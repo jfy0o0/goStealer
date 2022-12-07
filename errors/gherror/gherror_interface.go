@@ -1,6 +1,6 @@
 package gherror
 
-import "goHero/errors/ghcode"
+import "github.com/jfy0o0/goHero/errors/ghcode"
 
 // iCode is the interface for Code feature.
 type iCode interface {

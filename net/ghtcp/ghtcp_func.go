@@ -3,8 +3,8 @@ package ghtcp
 import (
 	"crypto/rand"
 	"crypto/tls"
-	"goHero/errors/gherror"
-	"goHero/net/ghtcp/internal"
+	"github.com/jfy0o0/goHero/errors/gherror"
+	"github.com/jfy0o0/goHero/net/ghtcp/internal"
 	"net"
 	"time"
 )

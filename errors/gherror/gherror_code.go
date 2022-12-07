@@ -2,7 +2,7 @@ package gherror
 
 import (
 	"fmt"
-	"goHero/errors/ghcode"
+	"github.com/jfy0o0/goHero/errors/ghcode"
 	"strings"
 )
 

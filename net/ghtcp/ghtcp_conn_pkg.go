@@ -2,8 +2,8 @@ package ghtcp
 
 import (
 	"encoding/binary"
-	"goHero/errors/ghcode"
-	"goHero/errors/gherror"
+	"github.com/jfy0o0/goHero/errors/ghcode"
+	"github.com/jfy0o0/goHero/errors/gherror"
 	"time"
 )
 

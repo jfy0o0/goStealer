@@ -1,7 +1,7 @@
 package ghssh
 
 import (
-	"goHero/net/ghssh/internal"
+	"github.com/jfy0o0/goHero/net/ghssh/internal"
 	"golang.org/x/crypto/ssh"
 	"strings"
 )

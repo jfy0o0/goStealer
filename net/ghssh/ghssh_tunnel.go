@@ -2,8 +2,8 @@ package ghssh
 
 import (
 	"fmt"
-	"goHero/errors/gherror"
-	"goHero/net/ghssh/internal"
+	"github.com/jfy0o0/goHero/errors/gherror"
+	"github.com/jfy0o0/goHero/net/ghssh/internal"
 	"golang.org/x/crypto/ssh"
 	"net"
 )

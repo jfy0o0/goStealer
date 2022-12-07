@@ -1,6 +1,6 @@
 package gherror
 
-import "goHero/errors/ghcode"
+import "github.com/jfy0o0/goHero/errors/ghcode"
 
 // Code returns the error code of current error.
 // It returns CodeNil if it has no error code neither it does not implement interface Code.

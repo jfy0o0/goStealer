@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"goHero/net/ghssh"
+	"github.com/jfy0o0/goHero/net/ghssh"
 	"log"
 	"runtime"
 )
