@@ -1,0 +1,80 @@
+package gsservice
+
+import (
+	"context"
+	"fmt"
+	"github.com/jfy0o0/goStealer/net/gsservice/iface"
+	"github.com/jfy0o0/goStealer/net/gstcp"
+	"net"
+	"os"
+	"time"
+)
+
+type Server struct {
+	ip         string
+	port       int
+	MsgHandler iface.IMsgHandler
+	ConnMgr    iface.IConnectionManager
+	DoExitChan chan os.Signal
+	idProducer iface.IConnectionIDProducer
+}
+
+func NewServer(ip string, port int, ConnMgr iface.IConnectionManager, MsgHandler iface.IMsgHandler) *Server {
+	return &Server{
+		ip:         ip,
+		port:       port,
+		MsgHandler: MsgHandler,
+		ConnMgr:    ConnMgr,
+		DoExitChan: make(chan os.Signal, 1),
+		idProducer: nil,
+	}
+}
+
+func (s *Server) SetIDProducer(idProducer iface.IConnectionIDProducer) {
+	s.idProducer = idProducer
+}
+
+func (s *Server) Start() error {
+	listen, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.ip, s.port))
+	if err != nil {
+		return err
+	}
+	defer listen.Close()
+
+	fmt.Println("[server TCP listener start SUCCESS]:", s.ip, s.port)
+	for {
+		conn, err := listen.Accept()
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		c := gstcp.NewConnByNetConn(conn)
+
+		ctx, cancel := context.WithCancel(context.Background())
+		connID := conn.RemoteAddr().String()
+		if s.idProducer != nil {
+			connID = s.idProducer.ProduceID()
+		}
+		dealConn := NewConnection(ctx, cancel, c, connID, s.MsgHandler, false)
+
+		go func(iConn iface.IConnection) {
+			s.ConnMgr.Add(iConn)
+			defer s.ConnMgr.Del(iConn)
+			iConn.Start()
+		}(dealConn)
+	}
+
+	s.ConnMgr.Clear()
+
+	return nil
+}
+func (s *Server) timer() {
+	s.ConnMgr.Walk(func(m map[string]iface.IConnection) {
+		now := time.Now().Unix()
+		for k, v := range m {
+			if v.GetFresh()+180 < now {
+				delete(m, k)
+			}
+		}
+	})
+}
