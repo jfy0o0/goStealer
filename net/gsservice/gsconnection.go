@@ -27,9 +27,10 @@ type Connection struct {
 	wg           sync.WaitGroup
 	isClient     bool
 	timer        *time.Timer
+	isCmd        bool
 }
 
-func NewConnection(cxt context.Context, cxtFunc func(), conn *gstcp.Conn, id string, handler iface.IMsgHandler, isClient bool) iface.IConnection {
+func newConnectionAsServer(cxt context.Context, cxtFunc func(), conn *gstcp.Conn, id string, handler iface.IMsgHandler) iface.IConnection {
 	c := &Connection{
 		conn:         conn,
 		connID:       id,
@@ -40,11 +41,26 @@ func NewConnection(cxt context.Context, cxtFunc func(), conn *gstcp.Conn, id str
 		txChan:       make(chan *Msg, 100),
 		cxt:          cxt,
 		cxtFunc:      cxtFunc,
-		isClient:     isClient,
+		isClient:     false,
+		isCmd:        false,
 	}
+	return c
+}
 
-	if c.isClient {
-		c.timer = time.NewTimer(time.Minute)
+func NewConnectionAsClient(cxt context.Context, cxtFunc func(), conn *gstcp.Conn, id string, handler iface.IMsgHandler, isCmd bool) iface.IConnection {
+	c := &Connection{
+		conn:         conn,
+		connID:       id,
+		fresh:        0,
+		msgHandler:   handler,
+		propertyLock: &sync.RWMutex{},
+		property:     make(map[string]interface{}),
+		txChan:       make(chan *Msg, 100),
+		cxt:          cxt,
+		cxtFunc:      cxtFunc,
+		isClient:     true,
+		isCmd:        isCmd,
+		timer:        time.NewTimer(time.Minute),
 	}
 
 	return c
@@ -118,7 +134,7 @@ func (c *Connection) read() error {
 		}
 		msg := NewMsg(tp[0], binMsg)
 		req := NewRequest(c, msg)
-		if err := c.msgHandler.Handle(req); err != nil {
+		if err := c.msgHandler.HandleCmdChan(req); err != nil {
 			return err
 		}
 	default:
@@ -139,6 +155,7 @@ func (c *Connection) StartWriter() (err error) {
 	c.Stop()
 	return err
 }
+
 func (c *Connection) write() error {
 	select {
 	// read txChan
@@ -187,6 +204,7 @@ func (c *Connection) writeFresh() error {
 
 	return nil
 }
+
 func (c *Connection) Start() {
 
 	fmt.Printf("[new conn ,id [%v] , local [%v] , remote [%v] ] \n", c.connID, c.conn.LocalAddr().String(), c.conn.RemoteAddr().String())
@@ -196,6 +214,23 @@ func (c *Connection) Start() {
 			return
 		}
 		c.conn = gstcp.UpgradeConnAsClient(c.conn)
+		chanTp := CmdChan
+		if !c.isCmd {
+			chanTp = DataChan
+		}
+
+		if _, err := c.conn.Write([]byte{chanTp}); err != nil {
+			return
+		}
+		switch chanTp {
+		case CmdChan:
+			c.runAsCmdChan()
+		case DataChan:
+			c.runAsDataChan()
+		default:
+			fmt.Println("error chan type")
+			return
+		}
 	} else {
 		header, err := c.conn.Recv(len(internal.ProtocolHeader))
 		if err != nil {
@@ -206,7 +241,28 @@ func (c *Connection) Start() {
 			return
 		}
 		c.conn = gstcp.UpgradeConnAsServer(c.conn)
+		chanTp, err := c.conn.Recv(1)
+		if err != nil {
+			return
+		}
+
+		switch chanTp[0] {
+		case CmdChan:
+			c.isCmd = true
+			c.SetFresh(time.Now().Unix())
+			c.runAsCmdChan()
+		case DataChan:
+			c.isCmd = false
+			c.runAsDataChan()
+		default:
+			fmt.Println("error chan type")
+			return
+		}
 	}
+
+}
+
+func (c *Connection) runAsCmdChan() {
 	c.wg.Add(2)
 
 	go func() {
@@ -220,7 +276,7 @@ func (c *Connection) Start() {
 			fmt.Println(err)
 		}
 	}()
-	if c.isClient {
+	if c.isClient && c.isCmd {
 		go func() {
 			if err := c.StartWriteFresh(); err != nil {
 				fmt.Println(err)
@@ -229,7 +285,10 @@ func (c *Connection) Start() {
 	}
 
 	c.wg.Wait()
+}
 
+func (c *Connection) runAsDataChan() {
+	c.msgHandler.HandleDataChan()
 }
 
 func (c *Connection) Stop() {
@@ -243,4 +302,7 @@ func (c *Connection) Stop() {
 func (c *Connection) SendMsg(tp byte, data []byte) error {
 	c.txChan <- NewMsg(tp, data)
 	return nil
+}
+func (c *Connection) IsCmdChan() bool {
+	return c.isCmd
 }

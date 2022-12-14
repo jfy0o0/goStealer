@@ -18,4 +18,6 @@ type IConnection interface {
 	DelProperty(string)
 
 	SendMsg(tp byte, data []byte) error
+
+	IsCmdChan() bool
 }

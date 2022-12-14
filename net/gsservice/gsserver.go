@@ -55,8 +55,7 @@ func (s *Server) Start() error {
 		if s.idProducer != nil {
 			connID = s.idProducer.ProduceID()
 		}
-		dealConn := NewConnection(ctx, cancel, c, connID, s.MsgHandler, false)
-
+		dealConn := newConnectionAsServer(ctx, cancel, c, connID, s.MsgHandler)
 		go func(iConn iface.IConnection) {
 			s.ConnMgr.Add(iConn)
 			defer s.ConnMgr.Del(iConn)
@@ -72,6 +71,9 @@ func (s *Server) timer() {
 	s.ConnMgr.Walk(func(m map[string]iface.IConnection) {
 		now := time.Now().Unix()
 		for k, v := range m {
+			if !v.IsCmdChan() {
+				continue
+			}
 			if v.GetFresh()+180 < now {
 				delete(m, k)
 			}
