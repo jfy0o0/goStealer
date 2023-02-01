@@ -4,14 +4,22 @@
   - gsarray
   - gslist
   - gsmap
+  - gspriority_queue
+  - gsqueue
   - gsset
   - gstire
+  - gstype
+- encoding
+  - gsbase64
+  - gsbinary
 - errors
   - gscode
   - gserror
 - net
+  - gsipv4
   - gsservice
   - gsssh
   - gstcp
   - gsudp
-
+- os
+  - gsenv
