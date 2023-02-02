@@ -11,15 +11,15 @@ import (
 // each element additionally has a "priority" associated with it. In a priority queue, an element with
 // high priority is served before an element with low priority.
 // priorityQueue is based on heap structure.
-type priorityQueue[T any] struct {
+type PriorityQueue[T any] struct {
 	mu           sync.Mutex
 	heap         *priorityQueueHeap[T]      // the underlying queue items manager using heap.
 	nextPriority *gstype.AtomicValue[int64] // nextPriority stores the next priority value of the heap, which is used to check if necessary to call the Pop of heap by Timer.
 }
 
 // newPriorityQueue creates and returns a priority queue.
-func New[T any](isBig bool) *priorityQueue[T] {
-	queue := &priorityQueue[T]{
+func New[T any](isBig bool) *PriorityQueue[T] {
+	queue := &PriorityQueue[T]{
 		heap:         newPriorityQueueHeap[T](isBig),
 		nextPriority: gstype.NewAtomicValue[int64](math.MaxInt64),
 	}
@@ -28,14 +28,14 @@ func New[T any](isBig bool) *priorityQueue[T] {
 }
 
 // NextPriority retrieves and returns the minimum and the most priority value of the queue.
-func (q *priorityQueue[T]) NextPriority() int64 {
+func (q *PriorityQueue[T]) NextPriority() int64 {
 	return q.nextPriority.Val()
 }
 
 // Push pushes a value to the queue.
 // The `priority` specifies the priority of the value.
 // The lesser the `priority` value the higher priority of the `value`.
-func (q *priorityQueue[T]) Push(value T, priority int64) {
+func (q *PriorityQueue[T]) Push(value T, priority int64) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	heap.Push(q.heap, priorityQueueItem[T]{
@@ -51,7 +51,7 @@ func (q *priorityQueue[T]) Push(value T, priority int64) {
 }
 
 // Pop retrieves, removes and returns the most high priority value from the queue.
-func (q *priorityQueue[T]) Pop() any {
+func (q *PriorityQueue[T]) Pop() (t T, ok bool) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	if v := heap.Pop(q.heap); v != nil {
@@ -60,7 +60,7 @@ func (q *priorityQueue[T]) Pop() any {
 			nextPriority = q.heap.array[0].priority
 		}
 		q.nextPriority.Set(nextPriority)
-		return v.(priorityQueueItem[T]).value
+		return v.(priorityQueueItem[T]).value, true
 	}
-	return nil
+	return t, false
 }

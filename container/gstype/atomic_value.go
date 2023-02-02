@@ -2,6 +2,7 @@ package gstype
 
 import (
 	"encoding/json"
+	"strconv"
 	"sync/atomic"
 )
 
@@ -38,6 +39,53 @@ func (v *AtomicValue[T]) Val() T {
 	t := v.value.Load()
 	t2, _ := t.(T)
 	return t2
+}
+
+func (v AtomicValue[T]) String() string {
+	t := v.value.Load()
+	switch t.(type) {
+	case bool:
+		t2, _ := t.(bool)
+		if t2 {
+			return "true"
+		} else {
+			return "false"
+		}
+	case byte:
+		t2, _ := t.(byte)
+		return strconv.FormatUint(uint64(t2), 10)
+	case []byte:
+		t2, _ := t.([]byte)
+		return string(t2)
+	case float32:
+		t2, _ := t.(float32)
+		return strconv.FormatFloat(float64(t2), 'g', -1, 32)
+	case float64:
+		t2, _ := t.(float64)
+		return strconv.FormatFloat(t2, 'g', -1, 64)
+	case int:
+		t2, _ := t.(int)
+		return strconv.Itoa(t2)
+	case int32:
+		t2, _ := t.(int32)
+		return strconv.Itoa(int(t2))
+	case int64:
+		t2, _ := t.(int64)
+		return strconv.FormatInt(t2, 10)
+	case string:
+		t2, _ := t.(string)
+		return t2
+	case uint:
+		t2, _ := t.(uint)
+		return strconv.FormatUint(uint64(t2), 10)
+	case uint32:
+		t2, _ := t.(uint32)
+		return strconv.FormatUint(uint64(t2), 10)
+	case uint64:
+		t2, _ := t.(uint64)
+		return strconv.FormatUint(t2, 10)
+	}
+	return "nil"
 }
 
 // MarshalJSON implements the interface MarshalJSON for json.Marshal.
