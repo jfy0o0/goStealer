@@ -5,7 +5,7 @@ import (
 	"github.com/jfy0o0/goStealer/internal/rwmutex"
 )
 
-type Set[T int | string] struct {
+type Set[T comparable] struct {
 	mu   rwmutex.RWMutex
 	data map[T]struct{}
 }
@@ -13,13 +13,13 @@ type Set[T int | string] struct {
 // New create and returns a new set, which contains un-repeated items.
 // The parameter `safe` is used to specify whether using set in concurrent-safety,
 // which is false in default.
-func New[T int | string](safe ...bool) *Set[T] {
+func New[T comparable](safe ...bool) *Set[T] {
 	return NewSet[T](safe...)
 }
 
 // NewSet create and returns a new set, which contains un-repeated items.
 // Also see New.
-func NewSet[T int | string](safe ...bool) *Set[T] {
+func NewSet[T comparable](safe ...bool) *Set[T] {
 	return &Set[T]{
 		data: make(map[T]struct{}),
 		mu:   rwmutex.Create(safe...),
@@ -28,7 +28,7 @@ func NewSet[T int | string](safe ...bool) *Set[T] {
 
 // NewFrom returns a new set from `items`.
 // Parameter `items` can be either a variable of any type, or a slice.
-func NewFrom[T int | string](items []T, safe ...bool) *Set[T] {
+func NewFrom[T comparable](items []T, safe ...bool) *Set[T] {
 	m := make(map[T]struct{})
 	for _, v := range items {
 		m[v] = struct{}{}

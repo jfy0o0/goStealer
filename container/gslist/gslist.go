@@ -86,29 +86,31 @@ func (l *List[T]) PushBacks(values []T) {
 }
 
 // PopBack removes the element from back of `l` and returns the value of the element.
-func (l *List[T]) PopBack() (value T) {
+func (l *List[T]) PopBack() (value T, ok bool) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.list == nil {
 		l.list = list.New()
-		return
+		return value, false
 	}
 	if e := l.list.Back(); e != nil {
-		value = l.list.Remove(e)
+		value = l.list.Remove(e).(T)
+		ok = true
 	}
 	return
 }
 
 // PopFront removes the element from front of `l` and returns the value of the element.
-func (l *List[T]) PopFront() (value T) {
+func (l *List[T]) PopFront() (value T, ok bool) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.list == nil {
 		l.list = list.New()
-		return
+		return value, false
 	}
 	if e := l.list.Front(); e != nil {
-		value = l.list.Remove(e)
+		value = l.list.Remove(e).(T)
+		ok = true
 	}
 	return
 }
@@ -129,7 +131,8 @@ func (l *List[T]) PopBacks(max int) (values []T) {
 		}
 		values = make([]T, length)
 		for i := 0; i < length; i++ {
-			values[i] = l.list.Remove(l.list.Back())
+			v := l.list.Remove(l.list.Back())
+			values[i] = v.(T)
 		}
 	}
 	return
@@ -151,7 +154,8 @@ func (l *List[T]) PopFronts(max int) (values []T) {
 		}
 		values = make([]T, length)
 		for i := 0; i < length; i++ {
-			values[i] = l.list.Remove(l.list.Front())
+			v := l.list.Remove(l.list.Front())
+			values[i] = v.(T)
 		}
 	}
 	return
@@ -180,7 +184,7 @@ func (l *List[T]) FrontAll() (values []T) {
 	if length > 0 {
 		values = make([]T, length)
 		for i, e := 0, l.list.Front(); i < length; i, e = i+1, e.Next() {
-			values[i] = e.Value
+			values[i] = e.Value.(T)
 		}
 	}
 	return
@@ -197,7 +201,7 @@ func (l *List[T]) BackAll() (values []T) {
 	if length > 0 {
 		values = make([]T, length)
 		for i, e := 0, l.list.Back(); i < length; i, e = i+1, e.Prev() {
-			values[i] = e.Value
+			values[i] = e.Value.(T)
 		}
 	}
 	return
@@ -211,7 +215,7 @@ func (l *List[T]) FrontValue() (value T) {
 		return
 	}
 	if e := l.list.Front(); e != nil {
-		value = e.Value
+		value = e.Value.(T)
 	}
 	return
 }
@@ -381,7 +385,7 @@ func (l *List[T]) Remove(e *Element) (value T) {
 	if l.list == nil {
 		l.list = list.New()
 	}
-	value = l.list.Remove(e)
+	value = l.list.Remove(e).(T)
 	return
 }
 
