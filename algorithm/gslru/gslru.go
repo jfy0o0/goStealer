@@ -32,6 +32,10 @@ func New[T comparable](cap int, adapter LruAdapter[T]) *Lru[T] {
 	return lru
 }
 
+func (lru *Lru[T]) Cap() int {
+	return lru.cap
+}
+
 // Close closes the LRU object.
 func (lru *Lru[T]) Close() {
 	lru.mutex.Lock()
@@ -43,6 +47,9 @@ func (lru *Lru[T]) Close() {
 func (lru *Lru[T]) Remove(key T) {
 	lru.mutex.Lock()
 	defer lru.mutex.Unlock()
+	if !lru.closed.Val() {
+		return
+	}
 	if v := lru.data.Get(key); v != nil {
 		lru.size--
 		lru.data.Remove(key)
@@ -61,7 +68,9 @@ func (lru *Lru[T]) Size() int {
 func (lru *Lru[T]) Push(key T) {
 	lru.mutex.Lock()
 	defer lru.mutex.Unlock()
-
+	if !lru.closed.Val() {
+		return
+	}
 	if v := lru.data.Get(key); v != nil {
 		lru.list.Remove(v)
 		lru.data.Set(key, lru.list.PushFront(key))
@@ -90,6 +99,9 @@ func (lru *Lru[T]) Push(key T) {
 func (lru *Lru[T]) Pop() (t T, ok bool) {
 	lru.mutex.Lock()
 	defer lru.mutex.Unlock()
+	if !lru.closed.Val() {
+		return
+	}
 	if v, ok := lru.list.PopBack(); ok {
 		lru.data.Remove(v)
 		return v, true

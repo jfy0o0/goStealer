@@ -4,6 +4,7 @@
   - gsarray
   - gslist
   - gsmap
+  - gspool
   - gspriority_queue
   - gsqueue
   - gsset
@@ -23,6 +24,7 @@
   - gsudp
 - os
   - gsenv
+  - gsproc
   - gstimer
     - 实现
       - 自身有个定时器是100ms就当前计数（currentTicks）+1
