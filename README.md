@@ -1,31 +1,31 @@
 # goStealer
 
 - container
-  - gsarray
-  - gslist
-  - gsmap
-  - gspool
-  - gspriority_queue
-  - gsqueue
-  - gsset
-  - gstire
-  - gstype
+  - [x] gsarray 
+  - [x] gslist
+  - [x] gsmap
+  - [x] gspool
+  - [x] gspriority_queue
+  - [x] gsqueue
+  - [x] gsset
+  - [x] gstire
+  - [x] gstype
 - encoding
-  - gsbase64
-  - gsbinary
+  - [x] gsbase64
+  - [x] gsbinary
 - errors
-  - gscode
-  - gserror
+  - [x] gscode
+  - [x] gserror
 - net
-  - gsipv4
-  - gsservice
-  - gsssh
-  - gstcp
-  - gsudp
+  - [x] gsipv4
+  - [x] gsservice
+  - [x] gsssh
+  - [x] gstcp
+  - [x] gsudp
 - os
-  - gsenv
-  - gsproc
-  - gstimer
+  - [x] gsenv
+  - [ ] gsproc
+  - [x] gstimer
     - 实现
       - 自身有个定时器是100ms就当前计数（currentTicks）+1
       - 若加入定时任务1s一次的话，则会加入优先队列（小根堆）【优先级为 currentTicks+10】
