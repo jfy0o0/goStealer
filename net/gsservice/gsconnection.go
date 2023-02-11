@@ -283,12 +283,11 @@ func (c *Connection) runAsCmdChan() {
 			}
 		}()
 	}
-
 	c.wg.Wait()
 }
 
 func (c *Connection) runAsDataChan() {
-	c.msgHandler.HandleDataChan()
+	c.msgHandler.HandleDataChan(c)
 }
 
 func (c *Connection) Stop() {
@@ -305,4 +304,8 @@ func (c *Connection) SendMsg(tp byte, data []byte) error {
 }
 func (c *Connection) IsCmdChan() bool {
 	return c.isCmd
+}
+
+func (c *Connection) GetRawConn() *gstcp.Conn {
+	return c.conn
 }

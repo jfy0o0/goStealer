@@ -38,13 +38,14 @@ func (cm *ConnectionManager) Add(connection iface.IConnection) {
 func (cm *ConnectionManager) Del(connection iface.IConnection) error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
-
-	if _, ok := cm.connections[connection.GetConnectionID()]; !ok {
+	c, ok := cm.connections[connection.GetConnectionID()]
+	if !ok {
 		fmt.Println("connection", connection.GetConnectionID(), "do not exits!")
 		return errors.New("remove nil pointer connection")
 	}
 
 	delete(cm.connections, connection.GetConnectionID())
+	c.Stop()
 	return nil
 }
 

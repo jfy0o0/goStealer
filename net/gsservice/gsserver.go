@@ -6,7 +6,6 @@ import (
 	"github.com/jfy0o0/goStealer/net/gsservice/iface"
 	"github.com/jfy0o0/goStealer/net/gstcp"
 	"net"
-	"os"
 	"time"
 )
 
@@ -15,7 +14,7 @@ type Server struct {
 	port       int
 	MsgHandler iface.IMsgHandler
 	ConnMgr    iface.IConnectionManager
-	DoExitChan chan os.Signal
+	//DoExitChan chan os.Signal
 	idProducer iface.IConnectionIDProducer
 }
 
@@ -25,7 +24,7 @@ func NewServer(ip string, port int, ConnMgr iface.IConnectionManager, MsgHandler
 		port:       port,
 		MsgHandler: MsgHandler,
 		ConnMgr:    ConnMgr,
-		DoExitChan: make(chan os.Signal, 1),
+		//DoExitChan: make(chan os.Signal, 1),
 		idProducer: nil,
 	}
 }
@@ -67,6 +66,7 @@ func (s *Server) Start() error {
 
 	return nil
 }
+
 func (s *Server) timer() {
 	s.ConnMgr.Walk(func(m map[string]iface.IConnection) {
 		now := time.Now().Unix()

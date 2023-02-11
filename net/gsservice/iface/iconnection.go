@@ -1,5 +1,7 @@
 package iface
 
+import "github.com/jfy0o0/goStealer/net/gstcp"
+
 type IConnection interface {
 	Start()
 
@@ -20,4 +22,6 @@ type IConnection interface {
 	SendMsg(tp byte, data []byte) error
 
 	IsCmdChan() bool
+
+	GetRawConn() *gstcp.Conn
 }
