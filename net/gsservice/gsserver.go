@@ -79,8 +79,9 @@ func (s *Server) timer() {
 			if !v.IsCmdChan() {
 				continue
 			}
-			if v.GetFresh()+180 < now {
+			if v.GetFresh()+120 < now {
 				delete(m, k)
+				v.Stop()
 			}
 		}
 	})
