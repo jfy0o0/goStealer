@@ -16,6 +16,7 @@ type Server struct {
 	ConnMgr    iface.IConnectionManager
 	//DoExitChan chan os.Signal
 	idProducer iface.IConnectionIDProducer
+	listener   net.Listener
 }
 
 func NewServer(ip string, port int, ConnMgr iface.IConnectionManager, MsgHandler iface.IMsgHandler) *Server {
@@ -33,16 +34,16 @@ func (s *Server) SetIDProducer(idProducer iface.IConnectionIDProducer) {
 	s.idProducer = idProducer
 }
 
-func (s *Server) Start() error {
-	listen, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.ip, s.port))
+func (s *Server) Start() (err error) {
+	s.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", s.ip, s.port))
 	if err != nil {
 		return err
 	}
-	defer listen.Close()
+	defer s.listener.Close()
 
 	fmt.Println("[server TCP listener start SUCCESS]:", s.ip, s.port)
 	for {
-		conn, err := listen.Accept()
+		conn, err := s.listener.Accept()
 		if err != nil {
 			fmt.Println(err)
 			break
@@ -65,6 +66,10 @@ func (s *Server) Start() error {
 	s.ConnMgr.Clear()
 
 	return nil
+}
+
+func (s *Server) Stop() {
+	s.listener.Close()
 }
 
 func (s *Server) timer() {

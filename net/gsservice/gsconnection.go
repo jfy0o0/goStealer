@@ -208,7 +208,8 @@ func (c *Connection) writeFresh() error {
 func (c *Connection) Start() {
 
 	fmt.Printf("[new conn ,id [%v] , local [%v] , remote [%v] ] \n", c.connID, c.conn.LocalAddr().String(), c.conn.RemoteAddr().String())
-
+	c.msgHandler.HandleOnConnect(c)
+	defer c.msgHandler.HandleOffConnect(c)
 	if c.isClient {
 		if err := c.conn.Send(internal.ProtocolHeader); err != nil {
 			return
@@ -287,7 +288,9 @@ func (c *Connection) runAsCmdChan() {
 }
 
 func (c *Connection) runAsDataChan() {
-	c.msgHandler.HandleDataChan(c)
+	if err := c.msgHandler.HandleDataChan(c); err != nil {
+		fmt.Println(err)
+	}
 }
 
 func (c *Connection) Stop() {

@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"github.com/jfy0o0/goStealer/errors/gserror"
 	"github.com/jfy0o0/goStealer/net/gstcp/internal"
+	"io"
 	"net"
 	"time"
 )
@@ -228,4 +229,31 @@ func UpgradeConnAsServer(conn net.Conn, svrTlsConfig ...*tls.Config) *Conn {
 		config = svrTlsConfig[0]
 	}
 	return NewConnByNetConn(tls.Server(conn, config))
+}
+
+// RelayConnection relay copies between left and right bidirectionally. Returns number of
+// bytes copied from right to left, from left to right, and any error occurred.
+func RelayConnection(left, right net.Conn) (int64, int64, error) {
+	type res struct {
+		N   int64
+		Err error
+	}
+	ch := make(chan res)
+
+	go func() {
+		n, err := io.Copy(right, left)
+		_ = right.SetDeadline(time.Now()) // wake up the other goroutine blocking on right
+		_ = left.SetDeadline(time.Now())  // wake up the other goroutine blocking on left
+		ch <- res{n, err}
+	}()
+
+	n, err := io.Copy(left, right)
+	_ = right.SetDeadline(time.Now()) // wake up the other goroutine blocking on right
+	_ = left.SetDeadline(time.Now())  // wake up the other goroutine blocking on left
+	rs := <-ch
+
+	if err == nil {
+		err = rs.Err
+	}
+	return n, rs.N, err
 }
