@@ -22,15 +22,14 @@ type Connection struct {
 	fresh        int64
 	msgHandler   iface.IMsgHandler
 	txChan       chan *Msg
-	cxt          context.Context
+	ctx          context.Context
 	cxtFunc      func()
-	wg           sync.WaitGroup
 	isClient     bool
 	timer        *time.Timer
 	isCmd        bool
 }
 
-func newConnectionAsServer(cxt context.Context, cxtFunc func(), conn *gstcp.Conn, id string, handler iface.IMsgHandler) iface.IConnection {
+func newConnectionAsServer(conn *gstcp.Conn, id string, handler iface.IMsgHandler) iface.IConnection {
 	c := &Connection{
 		conn:         conn,
 		connID:       id,
@@ -39,15 +38,14 @@ func newConnectionAsServer(cxt context.Context, cxtFunc func(), conn *gstcp.Conn
 		propertyLock: &sync.RWMutex{},
 		property:     make(map[string]interface{}),
 		txChan:       make(chan *Msg, 100),
-		cxt:          cxt,
-		cxtFunc:      cxtFunc,
 		isClient:     false,
 		isCmd:        false,
 	}
+	c.ctx, c.cxtFunc = context.WithCancel(context.TODO())
 	return c
 }
 
-func NewConnectionAsClient(cxt context.Context, cxtFunc func(), conn *gstcp.Conn, id string, handler iface.IMsgHandler, isCmd bool) iface.IConnection {
+func NewConnectionAsClient(conn *gstcp.Conn, id string, handler iface.IMsgHandler, isCmd bool) iface.IConnection {
 	c := &Connection{
 		conn:         conn,
 		connID:       id,
@@ -56,13 +54,11 @@ func NewConnectionAsClient(cxt context.Context, cxtFunc func(), conn *gstcp.Conn
 		propertyLock: &sync.RWMutex{},
 		property:     make(map[string]interface{}),
 		txChan:       make(chan *Msg, 100),
-		cxt:          cxt,
-		cxtFunc:      cxtFunc,
 		isClient:     true,
 		isCmd:        isCmd,
 		timer:        time.NewTimer(time.Minute),
 	}
-
+	c.ctx, c.cxtFunc = context.WithCancel(context.TODO())
 	return c
 }
 
@@ -103,9 +99,7 @@ func (c *Connection) DelProperty(name string) {
 	}
 }
 
-func (c *Connection) StartReader() error {
-	defer c.wg.Done()
-
+func (c *Connection) startReader() error {
 	for {
 		if err := c.read(); err != nil {
 			fmt.Println(err)
@@ -125,7 +119,7 @@ func (c *Connection) read() error {
 	switch tp[0] {
 	case Fresh:
 		c.fresh = time.Now().Unix()
-	case Json:
+	case Lv:
 		binMsg, err := c.conn.RecvPkg(gstcp.PkgOption{
 			HeaderSize: 4,
 		})
@@ -144,8 +138,7 @@ func (c *Connection) read() error {
 	return nil
 }
 
-func (c *Connection) StartWriter() (err error) {
-	defer c.wg.Done()
+func (c *Connection) startWriter() (err error) {
 	for {
 		if err = c.write(); err != nil {
 			break
@@ -164,8 +157,8 @@ func (c *Connection) write() error {
 			if _, err := c.conn.Write([]byte{Fresh}); err != nil {
 				return err
 			}
-		} else if msg.Tp == Json {
-			if _, err := c.conn.Write([]byte{Json}); err != nil {
+		} else if msg.Tp == Lv {
+			if _, err := c.conn.Write([]byte{Lv}); err != nil {
 				return err
 			}
 			if err := c.conn.SendPkg(msg.BinData, gstcp.PkgOption{
@@ -175,14 +168,14 @@ func (c *Connection) write() error {
 			}
 		}
 
-	case <-c.cxt.Done():
+	case <-c.ctx.Done():
 		return errors.New("cxt exit")
 	}
 
 	return nil
 }
 
-func (c *Connection) StartWriteFresh() (err error) {
+func (c *Connection) startWriteFresh() (err error) {
 	for {
 		if err = c.writeFresh(); err != nil {
 			break
@@ -194,11 +187,8 @@ func (c *Connection) StartWriteFresh() (err error) {
 func (c *Connection) writeFresh() error {
 	select {
 	case <-c.timer.C:
-		if err := c.SendMsg(Fresh, nil); err != nil {
-			return err
-		}
-
-	case <-c.cxt.Done():
+		c.SendFreshMsg()
+	case <-c.ctx.Done():
 		return errors.New("timer exit")
 	}
 
@@ -264,27 +254,26 @@ func (c *Connection) Start() {
 }
 
 func (c *Connection) runAsCmdChan() {
-	c.wg.Add(2)
-
 	go func() {
-		if err := c.StartWriter(); err != nil {
+		if err := c.startWriter(); err != nil {
 			fmt.Println(err)
 		}
 	}()
 
 	go func() {
-		if err := c.StartReader(); err != nil {
+		if err := c.startReader(); err != nil {
 			fmt.Println(err)
 		}
 	}()
+
 	if c.isClient && c.isCmd {
 		go func() {
-			if err := c.StartWriteFresh(); err != nil {
+			if err := c.startWriteFresh(); err != nil {
 				fmt.Println(err)
 			}
 		}()
 	}
-	c.wg.Wait()
+	<-c.ctx.Done()
 }
 
 func (c *Connection) runAsDataChan() {
@@ -301,10 +290,14 @@ func (c *Connection) Stop() {
 	c.conn.Close()
 }
 
-func (c *Connection) SendMsg(tp byte, data []byte) error {
-	c.txChan <- NewMsg(tp, data)
-	return nil
+func (c *Connection) SendLvMsg(data []byte) {
+	c.txChan <- NewMsg(Lv, data)
 }
+
+func (c *Connection) SendFreshMsg() {
+	c.txChan <- NewMsg(Fresh, nil)
+}
+
 func (c *Connection) IsCmdChan() bool {
 	return c.isCmd
 }

@@ -7,5 +7,5 @@ var (
 
 const (
 	Fresh = iota
-	Json
+	Lv
 )
