@@ -434,7 +434,7 @@ func (a *Array[T]) Clear() *Array[T] {
 }
 
 // Contains checks whether a value exists in the array.
-func (a *Array[T]) Contains(value interface{}) bool {
+func (a *Array[T]) Contains(value T) bool {
 	return a.Search(value) != -1
 }
 
