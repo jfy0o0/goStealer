@@ -86,7 +86,7 @@ func (a *Array[T]) Get(index int) (value T, found bool) {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 	if index < 0 || index >= len(a.array) {
-		return nil, false
+		return value, false
 	}
 	return a.array[index], true
 }
@@ -171,7 +171,7 @@ func (a *Array[T]) Remove(index int) (value T, found bool) {
 // doRemoveWithoutLock removes an item by index without lock.
 func (a *Array[T]) doRemoveWithoutLock(index int) (value T, found bool) {
 	if index < 0 || index >= len(a.array) {
-		return nil, false
+		return value, false
 	}
 	// Determine array boundaries when deleting to improve deletion efficiency.
 	if index == 0 {
@@ -249,7 +249,7 @@ func (a *Array[T]) PopLeft() (value T, found bool) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if len(a.array) == 0 {
-		return nil, false
+		return value, false
 	}
 	value = a.array[0]
 	a.array = a.array[1:]
@@ -263,7 +263,7 @@ func (a *Array[T]) PopRight() (value T, found bool) {
 	defer a.mu.Unlock()
 	index := len(a.array) - 1
 	if index < 0 {
-		return nil, false
+		return value, false
 	}
 	value = a.array[index]
 	a.array = a.array[:index]
@@ -271,11 +271,11 @@ func (a *Array[T]) PopRight() (value T, found bool) {
 }
 
 // PopLefts pops and returns `size` items from the beginning of array.
-func (a *Array[T]) PopLefts(size int) []T {
+func (a *Array[T]) PopLefts(size int) (v []T) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if size <= 0 || len(a.array) == 0 {
-		return nil
+		return v
 	}
 	if size >= len(a.array) {
 		array := a.array
@@ -288,11 +288,11 @@ func (a *Array[T]) PopLefts(size int) []T {
 }
 
 // PopRights pops and returns `size` items from the end of array.
-func (a *Array[T]) PopRights(size int) []T {
+func (a *Array[T]) PopRights(size int) (v []T) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if size <= 0 || len(a.array) == 0 {
-		return nil
+		return v
 	}
 	index := len(a.array) - size
 	if index <= 0 {
@@ -312,7 +312,7 @@ func (a *Array[T]) PopRights(size int) []T {
 // If `end` is negative, then the offset will start from the end of array.
 // If `end` is omitted, then the sequence will have everything from start up
 // until the end of the array.
-func (a *Array[T]) Range(start int, end ...int) []T {
+func (a *Array[T]) Range(start int, end ...int) (v []T) {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 	offsetEnd := len(a.array)
@@ -320,12 +320,12 @@ func (a *Array[T]) Range(start int, end ...int) []T {
 		offsetEnd = end[0]
 	}
 	if start > offsetEnd {
-		return nil
+		return v
 	}
 	if start < 0 {
 		start = 0
 	}
-	array := ([]T)(nil)
+	array := v
 	if a.mu.IsSafe() {
 		array = make([]T, offsetEnd-start)
 		copy(array, a.array[start:offsetEnd])
@@ -348,7 +348,7 @@ func (a *Array[T]) Range(start int, end ...int) []T {
 // If it is omitted, then the sequence will have everything from offset up until the end of the array.
 //
 // Any possibility crossing the left border of array, it will fail.
-func (a *Array[T]) SubSlice(offset int, length ...int) []T {
+func (a *Array[T]) SubSlice(offset int, length ...int) (v []T) {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 	size := len(a.array)
@@ -356,19 +356,19 @@ func (a *Array[T]) SubSlice(offset int, length ...int) []T {
 		size = length[0]
 	}
 	if offset > len(a.array) {
-		return nil
+		return v
 	}
 	if offset < 0 {
 		offset = len(a.array) + offset
 		if offset < 0 {
-			return nil
+			return v
 		}
 	}
 	if size < 0 {
 		offset += size
 		size = -size
 		if offset < 0 {
-			return nil
+			return v
 		}
 	}
 	end := offset + size
@@ -514,9 +514,9 @@ func (a *Array[T]) Fill(startIndex int, num int, value T) error {
 // Chunk splits an array into multiple arrays,
 // the size of each array is determined by `size`.
 // The last chunk may contain less than size elements.
-func (a *Array[T]) Chunk(size int) [][]T {
+func (a *Array[T]) Chunk(size int) (v [][]T) {
 	if size < 1 {
-		return nil
+		return v
 	}
 	a.mu.RLock()
 	defer a.mu.RUnlock()
