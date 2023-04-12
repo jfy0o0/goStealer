@@ -1,0 +1,5 @@
+package gsdns
+
+var userProtocolHeader = []byte{0x01, 0x02, 0x04, 0x08, 0x08, 0x04, 0x02, 0x01}
+
+var userProtocolHeaderLen = len(userProtocolHeader)
