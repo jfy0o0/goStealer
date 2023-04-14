@@ -26,10 +26,12 @@ type TxServer[T any] struct {
 	cancel       context.CancelFunc
 	appendHeader bool
 	localIP      uint32
-	adapter      DnsAdapter[T]
+	//adapter      *DnsAdapter[T]
+	f func(*UserDnsRequest[T])
 }
 
-func NewTxServer[T any](id int, toDnsIP string, rxChan chan<- *UserDnsResponse[T], scanInterval int, appendHeader bool, localIP uint32, adapter DnsAdapter[T]) *TxServer[T] {
+func NewTxServer[T any](id int, toDnsIP string, rxChan chan<- *UserDnsResponse[T], scanInterval int,
+	appendHeader bool, localIP uint32, f func(*UserDnsRequest[T])) *TxServer[T] {
 
 	s := &TxServer[T]{
 		id:           id,
@@ -41,13 +43,13 @@ func NewTxServer[T any](id int, toDnsIP string, rxChan chan<- *UserDnsResponse[T
 		timer:        gstimer.New(),
 		appendHeader: appendHeader,
 		localIP:      localIP,
-		adapter:      adapter,
+		f:            f,
 	}
 	s.timer.Stop()
 
 	s.timer.AddSingleton(time.Duration(scanInterval)*time.Second, s.onTimer)
 
-	fmt.Sprintf(" tx server | id : [%v] , cap : [%v] ,scan [%v] ,appendHeader [%v] ", s.id, s.idPool.Cap(), scanInterval, s.appendHeader)
+	fmt.Printf(" tx server | id : [%v] ,to : [%v] , cap : [%v] ,scan [%v] ,appendHeader [%v] \n", s.id, toDnsIP, s.idPool.Cap(), scanInterval, s.appendHeader)
 	return s
 }
 
@@ -80,7 +82,7 @@ func (s *TxServer[T]) onTimer() {
 		for k, v := range m {
 			if v.GetValue().endTime < now {
 				if v.GetValue().count.Val() == 0 {
-					s.adapter.OnNoResponse(v.GetValue())
+					s.f(v.GetValue())
 				}
 				delete(m, k)
 				s.idPool.DeleteID(uint64(k))

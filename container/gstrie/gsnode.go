@@ -38,3 +38,6 @@ func (node *Node[T]) IsPathEnd() bool {
 func (node *Node[T]) SoftDel() {
 	node.isPathEnd = false
 }
+func (node *Node[T]) GetValue()T  {
+	return node.v
+}

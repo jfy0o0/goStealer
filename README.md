@@ -2,27 +2,30 @@
 
 - container
   - [x] gsarray 
-  - [x] gslist
+  - [ ] gslist
   - [x] gsmap
-  - [x] gspool
-  - [x] gspriority_queue
-  - [x] gsqueue
-  - [x] gsset
-  - [x] gstire
-  - [x] gstype
+  - [ ] gspool
+  - [ ] gspriority_queue
+  - [ ] gsqueue
+  - [x] gsset 
+  - [x] gstire 
+  - [x] gstype 
 - encoding
-  - [x] gsbase64
-  - [x] gsbinary
+  - [ ] gsbase64
+  - [ ] gsbinary
 - errors
   - [x] gscode
   - [x] gserror
 - net
+  - [x] gshost
   - [x] gsipv4
+  - [x] gsnet
   - [x] gsservice
   - [x] gsssh
   - [x] gstcp
   - [x] gsudp
 - os
+  - [ ] gscache
   - [x] gsenv
   - [ ] gsproc
   - [x] gstimer
@@ -33,3 +36,12 @@
     - 任何的定时任务都是有误差的，在定时间隔比较大，或者并发量大，负载较高的系统中尤其明显，具体请参考：https://github.com/golang/go/issues/14410
     - 定时间隔不会考虑任务的执行时间。例如，如果一项工作需要`3`分钟才能执行完成，并且计划每隔`5`分钟运行一次，那么每次任务之间只有`2`分钟的空闲时间。
     - 需要注意的是**单例模式**运行的定时任务，任务的执行时间会影响该任务下一次执行的**开始时间**。例如：一个每间隔`1`秒执行的任务，运行耗时为`1`秒，那么在**第1秒**开始运行后，下一次任务将会在**第3秒**开始执行。因为中间有一次运行检查时发现有当前任务正在进行，因此退出等待下一次执行检查。
+
+- service
+  - [x] gsdns
+
+- util
+  - [x] gscall
+  - [ ] gsconv
+  - [x] gsid_pool
+  - [x] gstool

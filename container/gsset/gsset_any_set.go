@@ -69,9 +69,9 @@ func (set *Set[T]) Add(items ...T) {
 //
 // Note that, if `item` is nil, it does nothing and returns false.
 func (set *Set[T]) AddIfNotExist(item T) bool {
-	if item == nil {
-		return false
-	}
+	//if item == nil {
+	//	return false
+	//}
 	if !set.Contains(item) {
 		set.mu.Lock()
 		defer set.mu.Unlock()
@@ -93,9 +93,9 @@ func (set *Set[T]) AddIfNotExist(item T) bool {
 // Note that, if `item` is nil, it does nothing and returns false. The function `f`
 // is executed without writing lock.
 func (set *Set[T]) AddIfNotExistFunc(item T, f func() bool) bool {
-	if item == nil {
-		return false
-	}
+	//if item == nil {
+	//	return false
+	//}
 	if !set.Contains(item) {
 		if f() {
 			set.mu.Lock()
@@ -119,9 +119,9 @@ func (set *Set[T]) AddIfNotExistFunc(item T, f func() bool) bool {
 // Note that, if `item` is nil, it does nothing and returns false. The function `f`
 // is executed within writing lock.
 func (set *Set[T]) AddIfNotExistFuncLock(item T, f func() bool) bool {
-	if item == nil {
-		return false
-	}
+	//if item == nil {
+	//	return false
+	//}
 	if !set.Contains(item) {
 		set.mu.Lock()
 		defer set.mu.Unlock()
@@ -360,14 +360,14 @@ func (set *Set[T]) Merge(others ...*Set[T]) *Set[T] {
 //}
 
 // Pop randomly pops an item from set.
-func (set *Set[T]) Pop() T {
+func (set *Set[T]) Pop() (t T, ok bool) {
 	set.mu.Lock()
 	defer set.mu.Unlock()
 	for k, _ := range set.data {
 		delete(set.data, k)
-		return k
+		return k, true
 	}
-	return nil
+	return t, false
 }
 
 // Pops randomly pops `size` items from set.

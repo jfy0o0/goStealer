@@ -76,6 +76,8 @@ func NewArrayFromCopy[T any](array []T, safe ...bool) *Array[T] {
 // At returns the value by the specified index.
 // If the given `index` is out of range of the array, it returns `nil`.
 func (a *Array[T]) At(index int) (value T) {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
 	value, _ = a.Get(index)
 	return
 }
@@ -478,10 +480,10 @@ func (a *Array[T]) Unique() *Array[T] {
 }
 
 // LockFunc locks writing by callback function `f`.
-func (a *Array[T]) LockFunc(f func(array []T)) *Array[T] {
+func (a *Array[T]) LockFunc(f func(array []T)[]T ) *Array[T] {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	f(a.array)
+	a.array = f(a.array)
 	return a
 }
 

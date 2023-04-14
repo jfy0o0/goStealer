@@ -5,23 +5,23 @@ import (
 )
 
 type trieCallback[T any] interface {
-	// AddConflict
+	// AddClash
 	// @param 1: old
 	// @param 2: new
 	// @ret : insert ok ?
-	AddConflict(T, T) bool
+	AddClash(T, T) bool
 
 	// Del
 	// del callback
 	// @param : v
 	// @ret : del ok?
-	Del(T, interface{}) bool
+	Del(T, interface{}) (needSoftDel bool, happenDel bool)
 
 	// Find
 	// find callback
 	// @param: v
 	// @ret : find ok ?
-	Find(T) (T, bool)
+	Find([]T) ([]T, bool)
 }
 
 type Trie[T any] struct {
@@ -67,7 +67,7 @@ func (tree *Trie[T]) Add(word string, value T) bool {
 		}
 		if position == 0 {
 			if current.IsPathEnd() {
-				return tree.callback.AddConflict(current.v, value)
+				return tree.callback.AddClash(current.v, value)
 			}
 			current.v = value
 			current.isPathEnd = true
@@ -95,14 +95,17 @@ func (tree *Trie[T]) Del(word string, value interface{}) bool {
 			current = next
 		}
 	}
-	if !tree.callback.Del(current.v, value) {
-		return false
+	needSoftDel, happenDel := tree.callback.Del(current.v, value)
+	//if !tree.callback.Del(current.v, value) {
+	//	return false
+	//}
+	if needSoftDel {
+		current.SoftDel()
 	}
-	current.SoftDel()
-	return true
+	return happenDel
 }
 
-func (tree *Trie[T]) Find(text string) (value T, ret bool) {
+func (tree *Trie[T]) Find(text string) (arr []T, ret bool) {
 	tree.mu.RLock()
 	defer tree.mu.RUnlock()
 	var (
@@ -110,12 +113,13 @@ func (tree *Trie[T]) Find(text string) (value T, ret bool) {
 		current *Node[T]
 		runes   = []rune(text)
 		found   bool
-		hitNode *Node[T]
-		length  = len(runes)
+		//hitNode *Node[T]
+		length = len(runes)
 	)
 	if length == 0 {
-		return value, false
+		return arr, false
 	}
+
 	for position := len(runes) - 1; position >= 0; position-- {
 		current, found = parent.Children[runes[position]]
 		if !found {
@@ -125,10 +129,11 @@ func (tree *Trie[T]) Find(text string) (value T, ret bool) {
 		if !current.IsPathEnd() {
 			continue
 		}
-		hitNode = current
+		//hitNode = current
+		arr = append(arr, current.v)
 	}
-	if hitNode == nil {
-		return value, false
+	if len(arr) == 0 {
+		return arr, false
 	}
-	return tree.callback.Find(hitNode.v)
+	return tree.callback.Find(arr)
 }
