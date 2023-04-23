@@ -43,6 +43,13 @@ func NewTrie[T any](isSafe bool, callback ...trieCallback[T]) *Trie[T] {
 
 	return t
 }
+func (tree *Trie[T]) ReloadFromTrie(newTrie *Trie[T]) {
+	tree.mu.Lock()
+	newTrie.mu.Lock()
+	defer newTrie.mu.Unlock()
+	defer tree.mu.Unlock()
+	tree.Root = newTrie.Root
+}
 
 func (tree *Trie[T]) Add(word string, value T) bool {
 	tree.mu.Lock()

@@ -410,3 +410,11 @@ func (set *Set[T]) Walk(f func(item T) T) *Set[T] {
 func (set Set[T]) MarshalJSON() ([]byte, error) {
 	return json.Marshal(set.Slice())
 }
+
+func (set *Set[T]) Replace(newSet *Set[T]) {
+	set.mu.Lock()
+	newSet.mu.Lock()
+	defer set.mu.Unlock()
+	defer newSet.mu.Unlock()
+	set.data = newSet.data
+}
