@@ -387,3 +387,20 @@ func (m AnyAnyMap[K, V]) MarshalJSON() ([]byte, error) {
 	defer m.mu.RUnlock()
 	return json.Marshal(m.data)
 }
+
+func (m *AnyAnyMap[K, V]) GetOrNew(key K, f func() V) (value V) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.data == nil {
+		m.data = make(map[K]V)
+	}
+
+	var ok bool
+	value, ok = m.data[key]
+	if ok {
+		return
+	}
+	value = f()
+	m.data[key] = value
+	return
+}
