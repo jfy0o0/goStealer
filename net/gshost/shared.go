@@ -50,7 +50,6 @@ func (c *SharedConn) Read(p []byte) (n int, err error) {
 		// continue reading from the connection
 		var n2 int
 		n2, err = c.connReader.Read(p[n:])
-
 		// update total read
 		n += n2
 	}
