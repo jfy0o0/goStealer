@@ -155,53 +155,48 @@ func (m *AnyAnyMap[K, V]) Pops(size int) map[K]V {
 	return newMap
 }
 
-//// doSetWithLockCheck checks whether value of the key exists with mutex.Lock,
-//// if not exists, set value to the map with given `key`,
-//// or else just return the existing value.
-////
-//// When setting value, if `value` is type of `func() interface {}`,
-//// it will be executed with mutex.Lock of the hash map,
-//// and its return value will be set to the map with `key`.
-////
-//// It returns value with given `key`.
-//func (m *AnyAnyMap[K,V]) doSetWithLockCheck(key int, value T) T {
-//	m.mu.Lock()
-//	defer m.mu.Unlock()
-//	if m.data == nil {
-//		m.data = make(map[int]T)
-//	}
-//	if v, ok := m.data[key]; ok {
-//		return v
-//	}
-//	var v interface{} = value
-//	if f, ok := v.(func() T); ok {
-//		value = f()
-//	}
-//	if value != nil {
-//		m.data[key] = value
-//	}
-//	return value
-//}
+// // doSetWithLockCheck checks whether value of the key exists with mutex.Lock,
+// // if not exists, set value to the map with given `key`,
+// // or else just return the existing value.
+// //
+// // When setting value, if `value` is type of `func() interface {}`,
+// // it will be executed with mutex.Lock of the hash map,
+// // and its return value will be set to the map with `key`.
+// //
+// // It returns value with given `key`.
+func (m *AnyAnyMap[K, V]) doSetWithLockCheck(key K, value V) V {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.data == nil {
+		m.data = make(map[K]V)
+	}
+	//if v, ok := m.data[key]; ok {
+	//	return v
+	//}
+	//value := f()
+	m.data[key] = value
+	return value
+}
 
-//// GetOrSet returns the value by key,
-//// or sets value with given `value` if it does not exist and then returns this value.
-//func (m *AnyAnyMap[K,V]) GetOrSet(key int, value T) T {
-//	if v, ok := m.Search(key); !ok {
-//		return m.doSetWithLockCheck(key, value)
-//	} else {
-//		return v
-//	}
-//}
-//
-//// GetOrSetFunc returns the value by key,
-//// or sets value with returned value of callback function `f` if it does not exist and returns this value.
-//func (m *AnyAnyMap[K,V]) GetOrSetFunc(key int, f func() T) T {
-//	if v, ok := m.Search(key); !ok {
-//		return m.doSetWithLockCheck(key, f())
-//	} else {
-//		return v
-//	}
-//}
+// // GetOrSet returns the value by key,
+// // or sets value with given `value` if it does not exist and then returns this value.
+func (m *AnyAnyMap[K, V]) GetOrSet(key K, value V) V {
+	if v, ok := m.Search(key); !ok {
+		return m.doSetWithLockCheck(key, value)
+	} else {
+		return v
+	}
+}
+
+// // GetOrSetFunc returns the value by key,
+// // or sets value with returned value of callback function `f` if it does not exist and returns this value.
+func (m *AnyAnyMap[K, V]) GetOrSetFunc(key K, f func() V) V {
+	if v, ok := m.Search(key); !ok {
+		return m.doSetWithLockCheck(key, f())
+	} else {
+		return v
+	}
+}
 
 //// GetOrSetFuncLock returns the value by key,
 //// or sets value with returned value of callback function `f` if it does not exist and returns this value.
@@ -216,38 +211,38 @@ func (m *AnyAnyMap[K, V]) Pops(size int) map[K]V {
 //	}
 //}
 
-//// SetIfNotExist sets `value` to the map if the `key` does not exist, and then returns true.
-//// It returns false if `key` exists, and `value` would be ignored.
-//func (m *AnyAnyMap[K,V]) SetIfNotExist(key int, value T) bool {
-//	if !m.Contains(key) {
-//		m.doSetWithLockCheck(key, value)
-//		return true
-//	}
-//	return false
-//}
-//
-//// SetIfNotExistFunc sets value with return value of callback function `f`, and then returns true.
-//// It returns false if `key` exists, and `value` would be ignored.
-//func (m *AnyAnyMap[K,V]) SetIfNotExistFunc(key int, f func() T) bool {
-//	if !m.Contains(key) {
-//		m.doSetWithLockCheck(key, f())
-//		return true
-//	}
-//	return false
-//}
+// SetIfNotExist sets `value` to the map if the `key` does not exist, and then returns true.
+// It returns false if `key` exists, and `value` would be ignored.
+func (m *AnyAnyMap[K, V]) SetIfNotExist(key K, value V) bool {
+	if !m.Contains(key) {
+		m.doSetWithLockCheck(key, value)
+		return true
+	}
+	return false
+}
 
-//// SetIfNotExistFuncLock sets value with return value of callback function `f`, and then returns true.
-//// It returns false if `key` exists, and `value` would be ignored.
-////
-//// SetIfNotExistFuncLock differs with SetIfNotExistFunc function is that
-//// it executes function `f` with mutex.Lock of the hash map.
-//func (m *AnyAnyMap[K,V]) SetIfNotExistFuncLock(key int, f func() T) bool {
-//	if !m.Contains(key) {
-//		m.doSetWithLockCheck(key, f)
-//		return true
-//	}
-//	return false
-//}
+// SetIfNotExistFunc sets value with return value of callback function `f`, and then returns true.
+// It returns false if `key` exists, and `value` would be ignored.
+func (m *AnyAnyMap[K, V]) SetIfNotExistFunc(key K, f func() V) bool {
+	if !m.Contains(key) {
+		m.doSetWithLockCheck(key, f())
+		return true
+	}
+	return false
+}
+
+// SetIfNotExistFuncLock sets value with return value of callback function `f`, and then returns true.
+// It returns false if `key` exists, and `value` would be ignored.
+//
+// SetIfNotExistFuncLock differs with SetIfNotExistFunc function is that
+// it executes function `f` with mutex.Lock of the hash map.
+func (m *AnyAnyMap[K, V]) SetIfNotExistFuncLock(key K, f func() V) bool {
+	if !m.Contains(key) {
+		m.doSetWithLockCheck(key, f())
+		return true
+	}
+	return false
+}
 
 // Removes batch deletes values of the map by keys.
 func (m *AnyAnyMap[K, V]) Removes(keys []K) {
