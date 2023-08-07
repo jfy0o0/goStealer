@@ -70,6 +70,7 @@ func ScanDirFile(path string, pattern string, recursive ...bool) ([]string, erro
 	if len(recursive) > 0 {
 		isRecursive = recursive[0]
 	}
+
 	list, err := doScanDir(0, path, pattern, isRecursive, func(path string) string {
 		if IsDir(path) {
 			return ""

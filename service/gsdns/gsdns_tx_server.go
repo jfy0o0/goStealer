@@ -15,47 +15,44 @@ import (
 )
 
 type TxServer[T any] struct {
-	id           int
-	requestMap   *gsmap.AnyAnyMap[uint16, *gscall.Command[*UserDnsRequest[T], *UserDnsResponse[T]]]
-	txChan       chan *UserDnsRequest[T]
-	rxChan       chan<- *UserDnsResponse[T]
-	toDnsIP      string
-	realConn     *gsudp.Conn
-	idPool       *gsid_pool.IDPool
-	timer        *gstimer.Timer
-	cancel       context.CancelFunc
-	appendHeader bool
-	localIP      uint32
-	//adapter      *DnsAdapter[T]
-	f func(*UserDnsRequest[T])
+	requestMap *gsmap.AnyAnyMap[uint16, *gscall.Command[*UserDnsRequest[T], *UserDnsResponse[T]]]
+	txChan     chan *UserDnsRequest[T]
+	rxChan     chan<- *UserDnsResponse[T]
+	realConn   *gsudp.Conn
+	idPool     *gsid_pool.IDPool
+	timer      *gstimer.Timer
+	cancel     context.CancelFunc
+	*TxServerConfig[T]
 }
 
-func NewTxServer[T any](id int, toDnsIP string, rxChan chan<- *UserDnsResponse[T], scanInterval int,
-	appendHeader bool, localIP uint32, f func(*UserDnsRequest[T])) *TxServer[T] {
+func NewTxServer[T any](rxChan chan<- *UserDnsResponse[T], config ...*TxServerConfig[T]) *TxServer[T] {
 
 	s := &TxServer[T]{
-		id:           id,
-		requestMap:   gsmap.NewAnyAnyMap[uint16, *gscall.Command[*UserDnsRequest[T], *UserDnsResponse[T]]](true),
-		txChan:       make(chan *UserDnsRequest[T], 10*10000),
-		rxChan:       rxChan,
-		toDnsIP:      toDnsIP + ":53",
-		idPool:       gsid_pool.New(1 << 16),
-		timer:        gstimer.New(),
-		appendHeader: appendHeader,
-		localIP:      localIP,
-		f:            f,
+		requestMap: gsmap.NewAnyAnyMap[uint16, *gscall.Command[*UserDnsRequest[T], *UserDnsResponse[T]]](true),
+		txChan:     make(chan *UserDnsRequest[T], 10*10000),
+		rxChan:     rxChan,
+		idPool:     gsid_pool.New(1 << 16),
+		timer:      gstimer.New(),
 	}
+
+	if len(config) > 0 {
+		s.TxServerConfig = config[0]
+	} else {
+		s.TxServerConfig = GetDefaultTxServerConfig[T]()
+	}
+
 	s.timer.Stop()
 
-	s.timer.AddSingleton(time.Duration(scanInterval)*time.Second, s.onTimer)
+	s.timer.AddSingleton(time.Duration(s.ScanInterval)*time.Second, s.onTimer)
 
-	fmt.Printf(" tx server | id : [%v] ,to : [%v] , cap : [%v] ,scan [%v] ,appendHeader [%v] \n", s.id, toDnsIP, s.idPool.Cap(), scanInterval, s.appendHeader)
+	fmt.Printf(" tx server | id : [%v] ,to : [%v] , cap : [%v] ,scan [%v] ,appendHeader [%v] \n",
+		s.Id, s.ToDnsIP, s.idPool.Cap(), s.ScanInterval, s.AppendHeader)
 	return s
 }
 
 func (s *TxServer[T]) Run() error {
 	s.timer.Start()
-	realConn, err := gsudp.NewConn(s.toDnsIP)
+	realConn, err := gsudp.NewConn(s.ToDnsIP)
 	if err != nil {
 		return err
 	}
@@ -82,7 +79,9 @@ func (s *TxServer[T]) onTimer() {
 		for k, v := range m {
 			if v.GetValue().endTime < now {
 				if v.GetValue().count.Val() == 0 {
-					s.f(v.GetValue())
+					if s.OnNoResponse != nil {
+						s.OnNoResponse(v.GetValue())
+					}
 				}
 				delete(m, k)
 				s.idPool.DeleteID(uint64(k))
@@ -127,7 +126,7 @@ func (s *TxServer[T]) runRx() {
 			continue
 		}
 
-		if srcAddr.String() != s.toDnsIP {
+		if srcAddr.String() != s.ToDnsIP {
 			continue
 		}
 
@@ -165,14 +164,14 @@ func (s *TxServer[T]) pack(cmd *gscall.Command[*UserDnsRequest[T], *UserDnsRespo
 		return d, err
 	}
 
-	if !s.appendHeader {
+	if !s.AppendHeader {
 		return data, nil
 	}
 
 	buffer := bytes.NewBuffer(userProtocolHeader)
 	if cmd.GetValue().srcIP == 0 && cmd.GetValue().springBoardIP == 0 {
 		buffer.Write(cmd.GetValue().addr.IP.To4())
-		binary.Write(buffer, binary.BigEndian, &s.localIP)
+		binary.Write(buffer, binary.BigEndian, &s.LocalIP)
 	} else {
 		binary.Write(buffer, binary.BigEndian, &cmd.GetValue().srcIP)
 		binary.Write(buffer, binary.BigEndian, &cmd.GetValue().springBoardIP)
