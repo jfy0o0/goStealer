@@ -46,3 +46,7 @@ func (r *UserDnsRequest[T]) GetSpringBoardIP() uint32 {
 func (r *UserDnsRequest[T]) GetValue() T {
 	return r.value
 }
+
+func (r *UserDnsRequest[T]) SetValue(value T) {
+	r.value = value
+}
