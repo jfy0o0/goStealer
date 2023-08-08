@@ -139,14 +139,19 @@ func (s *TxServer[T]) runRx() {
 		if cmd == nil {
 			continue
 		}
-		cmd.GetValue().count.Add(1)
-		msg.ID = cmd.GetValue().oldDnsID
-		s.rxChan <- &UserDnsResponse[T]{
-			msg:   msg,
-			addr:  cmd.GetValue().addr,
-			value: cmd.GetValue().value,
+		var resIP uint32
+		for _, v := range msg.Answers {
+			resource, ok := v.Body.(*dnsmessage.AResource)
+			if !ok {
+				continue
+			}
+			resIP = binary.BigEndian.Uint32(resource.A[:])
+			break
 		}
 
+		cmd.GetValue().count.Add(1)
+		msg.ID = cmd.GetValue().oldDnsID
+		s.rxChan <- NewUserDnsResponse[T](msg, cmd.GetValue().addr, resIP, cmd.GetValue().value)
 	}
 }
 

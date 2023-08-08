@@ -6,19 +6,23 @@ import (
 )
 
 type UserDnsResponse[T any] struct {
-	msg   *dnsmessage.Message
-	addr  *net.UDPAddr
-	value T
+	msg           *dnsmessage.Message
+	addr          *net.UDPAddr
+	resResponseIP uint32
+	value         T
 }
 
-func NewUserDnsResponse[T any](msg *dnsmessage.Message, addr *net.UDPAddr, value T) *UserDnsResponse[T] {
+func NewUserDnsResponse[T any](msg *dnsmessage.Message, addr *net.UDPAddr, resResponseIP uint32, value T) *UserDnsResponse[T] {
 	return &UserDnsResponse[T]{
-		msg:   msg,
-		addr:  addr,
-		value: value,
+		msg:           msg,
+		addr:          addr,
+		resResponseIP: resResponseIP,
+		value:         value,
 	}
 }
-
+func (r *UserDnsResponse[T]) GetResponseIP() uint32 {
+	return r.resResponseIP
+}
 func (r *UserDnsResponse[T]) GetDnsMessage() *dnsmessage.Message {
 	return r.msg
 }
