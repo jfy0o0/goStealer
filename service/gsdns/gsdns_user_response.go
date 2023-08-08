@@ -11,6 +11,14 @@ type UserDnsResponse[T any] struct {
 	value T
 }
 
+func NewUserDnsResponse[T any](msg *dnsmessage.Message, addr *net.UDPAddr, value T) *UserDnsResponse[T] {
+	return &UserDnsResponse[T]{
+		msg:   msg,
+		addr:  addr,
+		value: value,
+	}
+}
+
 func (r *UserDnsResponse[T]) GetDnsMessage() *dnsmessage.Message {
 	return r.msg
 }
