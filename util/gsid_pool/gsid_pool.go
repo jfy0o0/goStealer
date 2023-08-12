@@ -1,5 +1,11 @@
 package gsid_pool
 
+import (
+	"github.com/jfy0o0/goStealer/errors/gscode"
+	"github.com/jfy0o0/goStealer/errors/gserror"
+	"time"
+)
+
 type IDPool struct {
 	cap   uint64
 	queue chan uint64
@@ -23,6 +29,15 @@ func (p *IDPool) init() {
 
 func (p *IDPool) NewID() uint64 {
 	return <-p.queue
+}
+
+func (p *IDPool) NewIDWait(duration time.Duration) (id uint64, err error) {
+	select {
+	case <-time.After(duration):
+		return 0, gserror.NewCode(gscode.CodeTimeOut)
+	case id = <-p.queue:
+		return 0, nil
+	}
 }
 
 func (p *IDPool) DeleteID(id uint64) {
