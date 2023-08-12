@@ -1,11 +1,14 @@
 package gsdns
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/binary"
 	"github.com/jfy0o0/goStealer/net/gsipv4"
 	"golang.org/x/net/dns/dnsmessage"
 	"net"
+	"os"
+	"strings"
 )
 
 func GetDnsUserRequest[T any](src *net.UDPAddr, buf []byte, n int, value T) ([]byte, int, *UserDnsRequest[T]) {
@@ -33,4 +36,30 @@ func GetDnsUserRequest[T any](src *net.UDPAddr, buf []byte, n int, value T) ([]b
 	}
 	req := NewUserDnsRequest(src, msg, srcIP, springBoardIP, value)
 	return buf, n, req
+}
+
+func GetLocalDnsIPs() (ips []string) {
+	f, err := os.Open("/etc/resolv.conf")
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := bytes.TrimSpace(scanner.Bytes())
+		if len(line) == 0 {
+			continue
+		}
+
+		if !strings.HasPrefix(string(line), "nameserver") {
+			continue
+		}
+
+		_, after, ok := strings.Cut(string(line), " ")
+		if !ok {
+			continue
+		}
+		ips = append(ips, after)
+	}
+	return
 }
