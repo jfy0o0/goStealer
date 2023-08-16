@@ -36,7 +36,7 @@ func (p *IDPool) NewIDWait(duration time.Duration) (id uint64, err error) {
 	case <-time.After(duration):
 		return 0, gserror.NewCode(gscode.CodeTimeOut)
 	case id = <-p.queue:
-		return 0, nil
+		return id, nil
 	}
 }
 
