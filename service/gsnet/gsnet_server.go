@@ -8,7 +8,7 @@ import (
 )
 
 type Server[T any] struct {
-	Connections *gsmap.AnyAnyMap[string, *WorkerSession[T]]
+	Connections *gsmap.AnyAnyMap[string, *Session[T]]
 	Config      *ServerConfig[T]
 	timer       *gstimer.Timer
 	listener    net.Listener
@@ -20,7 +20,7 @@ func NewServer[T any](configs ...*ServerConfig[T]) *Server[T] {
 		config = configs[0]
 	}
 	server := &Server[T]{
-		Connections: gsmap.NewAnyAnyMap[string, *WorkerSession[T]](true),
+		Connections: gsmap.NewAnyAnyMap[string, *Session[T]](true),
 		Config:      config,
 		timer:       gstimer.New(),
 	}
@@ -29,13 +29,13 @@ func NewServer[T any](configs ...*ServerConfig[T]) *Server[T] {
 	return server
 }
 func (s *Server[T]) timerCheckHeartBeat() {
-	s.Connections.LockFunc(func(m map[string]*WorkerSession[T]) {
+	s.Connections.LockFunc(func(m map[string]*Session[T]) {
 
-		for k, workSession := range m {
-			if workSession.YamuxSession == nil {
+		for k, session := range m {
+			if session.YamuxSession == nil {
 				continue
 			}
-			if _, err := workSession.YamuxSession.Ping(); err != nil {
+			if _, err := session.YamuxSession.Ping(); err != nil {
 				s.Config.OnHeartBeatFailed(k)
 				continue
 			}
