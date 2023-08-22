@@ -70,6 +70,7 @@ func (s *Session[T]) runTx() {
 				continue
 			}
 			s.Adapter.OnSendMsg(gstcp.NewConnByNetConn(c), msg)
+			c.Close()
 		}
 	}
 }
