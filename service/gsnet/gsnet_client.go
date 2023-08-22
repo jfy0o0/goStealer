@@ -72,7 +72,7 @@ func (c *Client[T]) do(conn *gstcp.Conn) {
 		c.Session.Stop()
 		c.Session = nil
 	}
-
+	c.isRun.Set(true)
 	c.Session, err = newClientSession[T](c, newConn, serverHello)
 	if err != nil {
 		return

@@ -80,3 +80,6 @@ func (s *Server[T]) process(conn *gstcp.Conn) {
 	session.Run()
 	s.Connections.Remove(clientHello.Data.Key)
 }
+func (s *Server[T]) Close() {
+	s.listener.Close()
+}
