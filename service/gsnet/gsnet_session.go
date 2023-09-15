@@ -81,5 +81,6 @@ func (s *Session[T]) handleStream(conn *gstcp.Conn) {
 }
 
 func (s *Session[T]) Stop() {
+	s.YamuxSession.Close()
 	s.cancel()
 }

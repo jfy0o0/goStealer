@@ -60,3 +60,18 @@ func StartTime() time.Time {
 func Uptime() time.Duration {
 	return time.Now().Sub(processStartTime)
 }
+
+//ShellRun executes given command <cmd> synchronizingly and outputs the command result to the stdout.
+//func ShellRun(cmd string) error {
+//	p := NewProcess(getShell(), append([]string{getShellOption()}, parseCommand(cmd)...))
+//	return p.Run()
+//}
+//
+//func ShellExec(cmd string, environment ...[]string) (string, error) {
+//	buf := bytes.NewBuffer(nil)
+//	p := NewProcess(getShell(), append([]string{getShellOption()}, parseCommand(cmd)...), environment...)
+//	p.Stdout = buf
+//	p.Stderr = buf
+//	err := p.Run()
+//	return buf.String(), err
+//}

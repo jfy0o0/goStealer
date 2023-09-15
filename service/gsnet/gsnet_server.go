@@ -67,6 +67,9 @@ func (s *Server[T]) process(conn *gstcp.Conn) {
 	if err != nil {
 		return
 	}
+	if clientHello.Data.Key == "" {
+		clientHello.Data.Key = conn.RemoteAddr().String()
+	}
 	newConn := gstcp.UpgradeConnAsServer(conn)
 	if err = s.Config.OnConnectedHandClientHello(clientHello); err != nil {
 		return
@@ -81,5 +84,12 @@ func (s *Server[T]) process(conn *gstcp.Conn) {
 	s.Connections.Remove(clientHello.Data.Key)
 }
 func (s *Server[T]) Close() {
+	s.Connections.LockFunc(func(m map[string]*Session[T]) {
+		for k, v := range m {
+			v.Stop()
+			delete(m, k)
+		}
+	})
+
 	s.listener.Close()
 }

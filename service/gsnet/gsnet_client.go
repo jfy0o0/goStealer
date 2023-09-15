@@ -41,7 +41,10 @@ func (c *Client[T]) Run() {
 		time.Sleep(time.Second * 30)
 	}
 }
-
+func (c *Client[T]) Stop() {
+	c.isRun.Set(false)
+	c.Session.Stop()
+}
 func (c *Client[T]) runTx() {
 	for v := range c.Tx {
 		if !c.isRun.Val() {
@@ -79,4 +82,8 @@ func (c *Client[T]) do(conn *gstcp.Conn) {
 	}
 
 	c.Session.Run()
+}
+
+func (c *Client[T]) IsConnected() bool {
+	return c.isRun.Val()
 }
