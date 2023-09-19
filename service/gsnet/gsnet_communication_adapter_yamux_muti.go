@@ -22,12 +22,12 @@ type CommunicationYamuxMuti[T any] struct {
 }
 
 func NewCommunicationYamuxMutiFromConfig[T any](config SessionConfig, session *Session[T]) *CommunicationYamuxMuti[T] {
-	x := &CommunicationYamuxMuti[T]{
+	c := &CommunicationYamuxMuti[T]{
 		ParentSession: session,
 		Tx:            make(chan interface{}, config.TxCap),
 	}
-	x.ctx, x.cancel = context.WithCancel(context.Background())
-	return x
+	c.ctx, c.cancel = context.WithCancel(context.Background())
+	return c
 }
 
 func (c *CommunicationYamuxMuti[T]) InitSelf(isServer bool, conn *gstcp.Conn) (err error) {

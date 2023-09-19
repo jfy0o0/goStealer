@@ -21,13 +21,14 @@ type CommunicationUserDefined[T any] struct {
 }
 
 func NewCommunicationUserDefinedFromConfig[T any](config SessionConfig, session *Session[T]) *CommunicationUserDefined[T] {
-	x := &CommunicationUserDefined[T]{
+	c := &CommunicationUserDefined[T]{
 		ParentSession: session,
 		Tx:            make(chan interface{}, config.TxCap),
 		IsRun:         gstype.NewBool(false),
 	}
-	x.ctx, x.cancel = context.WithCancel(context.Background())
-	return x
+	c.ctx, c.cancel = context.WithCancel(context.Background())
+
+	return c
 }
 
 func (c *CommunicationUserDefined[T]) InitSelf(isServer bool, conn *gstcp.Conn) error {
