@@ -42,10 +42,17 @@ type TestSessionAdapter struct {
 }
 
 func (s *TestSessionAdapter) OnMsg(conn *gstcp.Conn) {
-	x, _ := conn.RecvPkg(gstcp.PkgOption{
-		HeaderSize: 4,
-	})
-	log.Println("OnMsg", string(x))
+	for {
+		x, err := conn.RecvPkg(gstcp.PkgOption{
+			HeaderSize: 4,
+		})
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		log.Println("OnMsg", string(x))
+	}
+
 }
 func (s *TestSessionAdapter) OnSendMsg(conn *gstcp.Conn, msg interface{}) {
 	log.Println("OnSendMsg", msg)
@@ -65,6 +72,7 @@ func TestGsNetServer(t *testing.T) {
 		Hello:                  gstcp.NewGsHello[HelloExtend[string]](1, 1, HelloExtend[string]{Key: "asd", V: "abc"}),
 		ServerAdapter:          serverAdapter,
 		SessionAdapter:         sessionAdapter,
+		SessionConf:            SessionConfig{CommunicationType: CommunicationTypeUserDefined},
 	})
 
 	s.Run()
@@ -80,12 +88,13 @@ func TestGsNetClient(t *testing.T) {
 		Hello:          gstcp.NewGsHello[HelloExtend[string]](1, 1, HelloExtend[string]{Key: "asd", V: "abc"}),
 		ClientAdapter:  clientAdapter,
 		SessionAdapter: sessionAdapter,
+		SessionConf:    SessionConfig{CommunicationType: CommunicationTypeUserDefined},
 	})
 
 	go func() {
 		for i := 0; ; i++ {
 			time.Sleep(time.Second)
-			s.Tx <- "hi" + strconv.FormatInt(int64(i), 10)
+			s.Session.Push("hi" + strconv.FormatInt(int64(i), 10))
 		}
 	}()
 

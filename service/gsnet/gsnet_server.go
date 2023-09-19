@@ -25,17 +25,15 @@ func NewServer[T any](configs ...*ServerConfig[T]) *Server[T] {
 		timer:       gstimer.New(),
 	}
 	server.timer.Stop()
-	server.timer.AddSingleton(config.CheckBeatHeartInterval, server.timerCheckHeartBeat)
+	if config.CheckBeatHeartInterval != 0 {
+		server.timer.AddSingleton(config.CheckBeatHeartInterval, server.timerCheckHeartBeat)
+	}
 	return server
 }
 func (s *Server[T]) timerCheckHeartBeat() {
 	s.Connections.LockFunc(func(m map[string]*Session[T]) {
-
 		for k, session := range m {
-			if session.YamuxSession == nil {
-				continue
-			}
-			if _, err := session.YamuxSession.Ping(); err != nil {
+			if err := session.CheckHeartBeat(); err != nil {
 				s.Config.OnHeartBeatFailed(k)
 				continue
 			}
@@ -74,11 +72,17 @@ func (s *Server[T]) process(conn *gstcp.Conn) {
 	if err = s.Config.OnConnectedHandClientHello(clientHello); err != nil {
 		return
 	}
+	session := newServerSession[T](s)
+	session.Hello = clientHello
 
-	session, err := newServerSession[T](s, newConn, clientHello)
-	if err != nil {
+	if err = session.InitSelf(true, newConn); err != nil {
 		return
 	}
+	//session, err := newServerSession[T](s, newConn, clientHello)
+	//if err != nil {
+	//	return
+	//}
+
 	s.Connections.Set(clientHello.Data.Key, session)
 	session.Run()
 	s.Connections.Remove(clientHello.Data.Key)

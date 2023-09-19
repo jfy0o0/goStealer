@@ -19,6 +19,7 @@ type ServerConfig[T any] struct {
 	Hello                  *gstcp.GsHello[HelloExtend[T]]
 	ServerAdapter[T]
 	SessionAdapter[T]
+	SessionConf SessionConfig
 }
 
 func GetDefaultServerConfig[T any]() *ServerConfig[T] {
@@ -28,5 +29,6 @@ func GetDefaultServerConfig[T any]() *ServerConfig[T] {
 			Key: strconv.FormatInt(time.Now().UnixNano(), 10),
 		}),
 		CheckBeatHeartInterval: 5 * time.Minute,
+		SessionConf:            SessionConfig{CommunicationType: CommunicationTypeYamuxMuti},
 	}
 }

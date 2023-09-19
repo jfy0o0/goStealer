@@ -15,6 +15,7 @@ type ClientConfig[T any] struct {
 	Hello    *gstcp.GsHello[HelloExtend[T]]
 	ClientAdapter[T]
 	SessionAdapter[T]
+	SessionConf SessionConfig
 }
 
 func GetDefaultClientConfig[T any]() *ClientConfig[T] {
@@ -23,5 +24,6 @@ func GetDefaultClientConfig[T any]() *ClientConfig[T] {
 		Hello: gstcp.NewGsHello[HelloExtend[T]](1, 1, HelloExtend[T]{
 			Key: strconv.FormatInt(time.Now().UnixNano(), 10),
 		}),
+		SessionConf: SessionConfig{CommunicationType: CommunicationTypeYamuxMuti},
 	}
 }
