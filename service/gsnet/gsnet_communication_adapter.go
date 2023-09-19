@@ -16,13 +16,11 @@ func GetCommunicationAdapter[T any](config SessionConfig, session *Session[T]) C
 	var adapter CommunicationAdapter
 	switch config.CommunicationType {
 	case CommunicationTypeUserDefined:
-		adapter = &CommunicationUserDefined[T]{ParentSession: session,
-			Tx: make(chan interface{}, config.TxCap)}
+		adapter = NewCommunicationUserDefinedFromConfig[T](config, session)
 	case CommunicationTypeYamuxSingle:
 
 	case CommunicationTypeYamuxMuti:
-		adapter = &CommunicationYamuxMuti[T]{ParentSession: session,
-			Tx: make(chan interface{}, config.TxCap)}
+		adapter = NewCommunicationYamuxMutiFromConfig[T](config, session)
 	}
 	//if err := adapter.InitSelf(isServer); err != nil {
 	//	log.Println("can not init self ... ")

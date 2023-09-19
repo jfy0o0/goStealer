@@ -21,9 +21,17 @@ type CommunicationYamuxMuti[T any] struct {
 	isServer      bool
 }
 
+func NewCommunicationYamuxMutiFromConfig[T any](config SessionConfig, session *Session[T]) *CommunicationYamuxMuti[T] {
+	x := &CommunicationYamuxMuti[T]{
+		ParentSession: session,
+		Tx:            make(chan interface{}, config.TxCap),
+	}
+	x.ctx, x.cancel = context.WithCancel(context.Background())
+	return x
+}
+
 func (c *CommunicationYamuxMuti[T]) InitSelf(isServer bool, conn *gstcp.Conn) (err error) {
 	c.ctx, c.cancel = context.WithCancel(context.Background())
-	//c.Tx = make(chan interface{}, 1024)
 	c.isServer = isServer
 	c.Conn = conn
 	if c.isServer {

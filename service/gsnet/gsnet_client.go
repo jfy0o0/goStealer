@@ -1,7 +1,6 @@
 package gsnet
 
 import (
-	"github.com/jfy0o0/goStealer/container/gstype"
 	"github.com/jfy0o0/goStealer/net/gstcp"
 	"log"
 	"net"
@@ -9,8 +8,8 @@ import (
 )
 
 type Client[T any] struct {
-	Config  *ClientConfig[T]
-	isRun   *gstype.Bool
+	Config *ClientConfig[T]
+	//isRun   *gstype.Bool
 	Session *Session[T]
 }
 
@@ -21,7 +20,7 @@ func NewClient[T any](configs ...*ClientConfig[T]) *Client[T] {
 	}
 	client := &Client[T]{
 		Config: config,
-		isRun:  gstype.NewBool(false),
+		//isRun:  gstype.NewBool(false),
 	}
 	client.Session = newClientSession[T](client)
 	return client
@@ -47,7 +46,7 @@ func (c *Client[T]) Run() {
 	}
 }
 func (c *Client[T]) Stop() {
-	c.isRun.Set(false)
+	//c.isRun.Set(false)
 	c.Session.Stop()
 }
 
@@ -60,7 +59,8 @@ func (c *Client[T]) Stop() {
 
 func (c *Client[T]) do(conn *gstcp.Conn) {
 	defer conn.Close()
-	defer c.isRun.Set(false)
+	//defer c.isRun.Set(false)
+	//defer c.Session.IsRun.Set(false)
 	var err error
 	if err = c.Config.OnConnectedStart(conn); err != nil {
 		return
@@ -88,11 +88,11 @@ func (c *Client[T]) do(conn *gstcp.Conn) {
 		return
 	}
 
-	c.isRun.Set(true)
-
+	//c.isRun.Set(true)
+	//c.Session.IsRun.Set(true)
 	c.Session.Run()
 }
 
-func (c *Client[T]) IsConnected() bool {
-	return c.isRun.Val()
-}
+//func (c *Client[T]) IsConnected() bool {
+//return c.isRun.Val()
+//}

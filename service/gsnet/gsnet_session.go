@@ -19,6 +19,7 @@ type Session[T any] struct {
 	// (告知该链接已经退出/停止的channel)
 	ctx    context.Context
 	cancel context.CancelFunc
+	//IsRun  *gstype.Bool
 
 	CommunicationAdapter
 }
@@ -26,9 +27,9 @@ type Session[T any] struct {
 // , hello *gstcp.GsHello[HelloExtend[T]]
 func newServerSession[T any](s *Server[T]) (session *Session[T]) {
 	session = &Session[T]{
-		//Hello:    hello,
 		Adapter:  s.Config.SessionAdapter,
 		Property: gsmap.NewAnyAnyMap[string, interface{}](true),
+		//IsRun:    gstype.NewBool(false),
 	}
 	//session.CommunicationAdapter = GetCommunicationAdapter(s.Config.SessionConf.CommunicationType, session, true)
 	session.CommunicationAdapter = GetCommunicationAdapter(s.Config.SessionConf, session)
@@ -38,9 +39,9 @@ func newServerSession[T any](s *Server[T]) (session *Session[T]) {
 // , hello *gstcp.GsHello[HelloExtend[T]]
 func newClientSession[T any](c *Client[T]) (session *Session[T]) {
 	session = &Session[T]{
-		//Hello:    hello,
 		Adapter:  c.Config.SessionAdapter,
 		Property: gsmap.NewAnyAnyMap[string, interface{}](true),
+		//IsRun:    gstype.NewBool(false),
 	}
 	session.CommunicationAdapter = GetCommunicationAdapter(c.Config.SessionConf, session)
 

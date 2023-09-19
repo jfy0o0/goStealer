@@ -3,7 +3,9 @@ package gsnet
 import (
 	"context"
 	"fmt"
+	"github.com/jfy0o0/goStealer/container/gstype"
 	"github.com/jfy0o0/goStealer/net/gstcp"
+	"log"
 )
 
 type CommunicationUserDefined[T any] struct {
@@ -15,16 +17,30 @@ type CommunicationUserDefined[T any] struct {
 	Conn          *gstcp.Conn
 	ParentSession *Session[T]
 	isServer      bool
+	IsRun         *gstype.Bool
+}
+
+func NewCommunicationUserDefinedFromConfig[T any](config SessionConfig, session *Session[T]) *CommunicationUserDefined[T] {
+	x := &CommunicationUserDefined[T]{
+		ParentSession: session,
+		Tx:            make(chan interface{}, config.TxCap),
+		IsRun:         gstype.NewBool(false),
+	}
+	x.ctx, x.cancel = context.WithCancel(context.Background())
+	return x
 }
 
 func (c *CommunicationUserDefined[T]) InitSelf(isServer bool, conn *gstcp.Conn) error {
-	c.ctx, c.cancel = context.WithCancel(context.Background())
 	//c.Tx = make(chan interface{}, 1024)
+	c.ctx, c.cancel = context.WithCancel(context.Background())
 	c.isServer = isServer
 	c.Conn = conn
+	log.Println("re init self=  ", conn.LocalAddr().String())
 	return nil
 }
 func (c *CommunicationUserDefined[T]) Run() {
+	c.IsRun.Set(true)
+	defer c.IsRun.Set(false)
 	go c.runTx()
 	go c.runRx()
 	<-c.ctx.Done()
@@ -37,17 +53,27 @@ func (c *CommunicationUserDefined[T]) runRx() {
 }
 
 func (c *CommunicationUserDefined[T]) runTx() {
+	//defer log.Println("tx chan exit ...")
 	for {
 		select {
 		case <-c.ctx.Done():
 			c.Conn.Close()
-			fmt.Println("close conn ")
+			//fmt.Println("close conn ")
 			return
 		case msg, ok := <-c.Tx:
 			if !ok {
 				continue
 			}
-			c.ParentSession.Adapter.OnSendMsg(c.Conn, msg)
+			for {
+				if !c.IsRun.Val() {
+					if c.ctx.Err() != nil {
+						return
+					}
+					continue
+				}
+				c.ParentSession.Adapter.OnSendMsg(c.Conn, msg)
+				break
+			}
 		}
 	}
 }

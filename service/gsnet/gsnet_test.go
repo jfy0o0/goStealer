@@ -47,7 +47,7 @@ func (s *TestSessionAdapter) OnMsg(conn *gstcp.Conn) {
 			HeaderSize: 4,
 		})
 		if err != nil {
-			log.Println(err)
+			//log.Println(err)
 			return
 		}
 		log.Println("OnMsg", string(x))
