@@ -86,6 +86,7 @@ func (s *Server[T]) process(conn *gstcp.Conn) {
 	s.Connections.Set(clientHello.Data.Key, session)
 	session.Run()
 	s.Connections.Remove(clientHello.Data.Key)
+	session.Stop()
 }
 func (s *Server[T]) Close() {
 	s.Connections.LockFunc(func(m map[string]*Session[T]) {

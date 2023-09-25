@@ -27,6 +27,8 @@ func NewCommunicationYamuxMutiFromConfig[T any](config SessionConfig, session *S
 		Tx:            make(chan interface{}, config.TxCap),
 	}
 	c.ctx, c.cancel = context.WithCancel(context.Background())
+	go c.runTx()
+
 	return c
 }
 
@@ -43,7 +45,6 @@ func (c *CommunicationYamuxMuti[T]) InitSelf(isServer bool, conn *gstcp.Conn) (e
 }
 
 func (c *CommunicationYamuxMuti[T]) Run() {
-	go c.runTx()
 	for {
 		stream, err := c.YamuxSession.Accept()
 		if err != nil {

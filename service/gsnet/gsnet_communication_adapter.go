@@ -2,6 +2,7 @@ package gsnet
 
 import (
 	"github.com/jfy0o0/goStealer/net/gstcp"
+	"log"
 )
 
 type CommunicationAdapter interface {
@@ -20,6 +21,7 @@ func GetCommunicationAdapter[T any](config SessionConfig, session *Session[T]) C
 	case CommunicationTypeYamuxSingle:
 
 	case CommunicationTypeYamuxMuti:
+		log.Fatalln("not support ")
 		adapter = NewCommunicationYamuxMutiFromConfig[T](config, session)
 	}
 	//if err := adapter.InitSelf(isServer); err != nil {
